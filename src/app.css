@@ -79,6 +79,11 @@
   src: url('/src/fonts/KumbhSans.ttf');
 }
 
+@font-face {
+  font-family: "Funnel Sans";
+  src: url("/src/fonts/FunnelSans.ttf");
+}
+
 h1 {
   font-family: "Kumbh Sans", sans-serif;
   font-size: 2.5rem;
@@ -87,5 +92,23 @@ h1 {
 h2 {
   font-family: "Kumbh Sans", sans-serif;
   font-size: 1.75rem;
+  font-weight: bold;
+}
+
+h3 {
+  font-family: "Funnel Sans", sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+h4 {
+  font-family: "Funnel Sans", sans-serif;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+h5 {
+  font-family: "Funnel Sans", sans-serif;
+  font-size: 1rem;
   font-weight: bold;
 }

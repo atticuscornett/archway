@@ -6,6 +6,7 @@
 
     let name = $state("");
     let greetMsg = $state("");
+    window.invoke = invoke;
 
     async function greet(event: Event) {
         event.preventDefault();

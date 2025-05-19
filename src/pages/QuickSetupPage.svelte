@@ -1,40 +1,32 @@
 <script type="ts">
-import {Button} from "$lib/components/ui/button/index.js";
+    import {Button} from "$lib/components/ui/button/index.js";
+    import {Files, FileSliders} from '@lucide/svelte';
+    import * as Select from "$lib/components/ui/select/index.js";
+    import SetUpAutomation from "./SetUpAutomation.svelte";
 
-    let page = $state("welcome")
+    let page = $state("welcome");
+
+    let job = $state({
+        type: "copy"
+    });
 </script>
 
-<div class="center-screen">
-    {#if page === "welcome"}
+{#if page === "welcome"}
+    <div class="center-screen">
         <img src="src/img/ArchwayFull.svg" alt="Archway Logo" class="logo" />
         <h1>Welcome to Archway!</h1>
         <h2>Let's get your first automation set up.</h2>
         <div class="small-margin">
             <Button onclick={()=>{page = "copy-or-move"}}>Quick Setup</Button>
-            <Button variant="secondary">No, thanks. I'll set up manually.</Button>
+            <Button variant="secondary">No, thanks. I'll set up later.</Button>
         </div>
-    {/if}
-    {#if page === "copy-or-move"}
-        <h1>Copy or move files?</h1>
-        <div class="large-button-container">
-            <button class="large-button">
-                <img src="src/img/icons/copy.svg" alt="Copy Icon" />
-                <h2>Copy/Backup</h2>
-                <span>
-                    Copy files from the source to the destination.
-                </span>
-            </button>
+    </div>
+{/if}
 
-            <button class="large-button">
-                <img src="src/img/icons/move.svg" alt="Copy Icon" />
-                <h2>Move/Archive</h2>
-                <span>
-                    Move files to the destination and delete them from the source.
-                </span>
-            </button>
-        </div>
-    {/if}
-</div>
+
+{#if page === "copy-or-move"}
+    <SetUpAutomation></SetUpAutomation>
+{/if}
 
 <style>
     .logo {
