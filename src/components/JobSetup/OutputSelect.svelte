@@ -45,11 +45,10 @@
     <h5>Output Folder: {job["output-dir"]}</h5>
 
     {#if job["output-dir"].startsWith("C:")}
-            <h4 class="accent-red-500">Are you sure you want to save to your main drive? This may cause unexpected behavior.</h4>
+            <h4 class="text-red-500">Are you sure you want to save to your main drive? This may cause unexpected behavior.</h4>
     {/if}
 {/if}
-<br>
-<Checkbox id="device-specific" bind:checked={job["output-device"]}></Checkbox>
+<Checkbox class="my-4" id="device-specific" bind:checked={job["output-device"]}></Checkbox>
 <Label for="device-specific">Use any device with this drive letter</Label>
 <br>
 <Checkbox id="new-folder" bind:checked={job["new-folder"]}></Checkbox>

@@ -22,6 +22,11 @@ fn get_drives() -> Vec<Vec<String>> {
     return drives;
 }
 
+#[tauri::command]
+fn get_documents() -> String {
+    return dirs::document_dir().unwrap().to_string_lossy().to_string();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -29,6 +34,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
         .invoke_handler(tauri::generate_handler![get_drives])
+        .invoke_handler(tauri::generate_handler![get_documents])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
