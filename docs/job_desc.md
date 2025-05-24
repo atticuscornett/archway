@@ -35,7 +35,7 @@ imported on other devices.
       - `'lastused'` (string): A regular expression filter.
       - `'size'` (string): A file size filter.
     - `traits` (Object):
-        - `size` (int): The size of the file in bytes.
+        - `size` (int): The size of the file in megabytes.
         - `lastused` (string): The last used date of the file.
           - **Values:**
             - `'week'` (string): The file has not been used in the last week.
@@ -45,7 +45,14 @@ imported on other devices.
             - `'3months'` (string): The file has not been used in the last three months.
             - `'6months'` (string): The file has not been used in the last six months.
             - `'year'` (string): The file has not been used in the last year.
-        - `extensions` (string array): The file extensions to filter by, omitting the dot.
+        - `extensions` (string array): The file extensions to filter by, omitting the dot. (May also be a category name followed by ":special")
+          - **Values:**
+            - `'photos'` (string): Photos.
+            - `'videos'` (string): Videos.
+            - `'documents'` (string): Documents.
+            - `'music'` (string): Music.
+            - `'downloads'` (string): Downloads.
+            - `'desktop'` (string): Desktop files.
 - `triggers` (Object array): List of triggers to start the job.
   - `type` (string): The type of trigger.
     - **Values:**

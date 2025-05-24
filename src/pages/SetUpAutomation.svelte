@@ -4,6 +4,7 @@
     import { ChevronLeft, ChevronRight } from '@lucide/svelte';
     import OutputSelect from "../components/JobSetup/OutputSelect.svelte";
     import InputSelect from "../components/JobSetup/InputSelect.svelte";
+    import FileFilters from "../components/JobSetup/FileFilters.svelte";
 
     let step = $state(0);
     let canContinue = $state(true);
@@ -38,6 +39,9 @@
 {/if}
 {#if step === 2}
     <InputSelect bind:job bind:canContinue/>
+{/if}
+{#if step === 3}
+    <FileFilters bind:job bind:canContinue/>
 {/if}
 
 {#if step > 0}

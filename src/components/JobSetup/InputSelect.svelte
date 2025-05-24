@@ -88,24 +88,24 @@
 <h2>Input Folders</h2>
 <br>
 <div class="flex">
-    <div onchange={refreshInputDirs}>
+    <div>
         <h3>Libraries</h3>
-        <Switch id="docs" bind:checked={libraries.documents}></Switch>
+        <Switch id="docs" bind:checked={libraries.documents} onCheckedChange={refreshInputDirs}></Switch>
         <Label for="docs" class="align-text-bottom text-lg">Documents</Label>
         <br>
-        <Switch id="music" bind:checked={libraries.music}></Switch>
+        <Switch id="music" bind:checked={libraries.music} onCheckedChange={refreshInputDirs}></Switch>
         <Label for="music" class="align-text-bottom text-lg">Music</Label>
         <br>
-        <Switch id="desktop" bind:checked={libraries.desktop}></Switch>
+        <Switch id="desktop" bind:checked={libraries.desktop} onCheckedChange={refreshInputDirs}></Switch>
         <Label for="desktop" class="align-text-bottom text-lg">Desktop</Label>
         <br>
-        <Switch id="downloads" bind:checked={libraries.downloads}></Switch>
+        <Switch id="downloads" bind:checked={libraries.downloads} onCheckedChange={refreshInputDirs}></Switch>
         <Label for="downloads" class="align-text-bottom text-lg">Downloads</Label>
         <br>
-        <Switch id="pictures" bind:checked={libraries.pictures}></Switch>
+        <Switch id="pictures" bind:checked={libraries.pictures} onCheckedChange={refreshInputDirs}></Switch>
         <Label for="pictures" class="align-text-bottom text-lg">Pictures</Label>
         <br>
-        <Switch id="videos" bind:checked={libraries.videos}></Switch>
+        <Switch id="videos" bind:checked={libraries.videos} onCheckedChange={refreshInputDirs}></Switch>
         <Label for="videos" class="align-text-bottom text-lg">Videos</Label>
     </div>
     <div class="mx-10">
