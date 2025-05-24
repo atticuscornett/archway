@@ -2,9 +2,11 @@
     import {Files, FileSliders} from "@lucide/svelte";
     import * as Select from "$lib/components/ui/select/index.js";
     import {Input} from "$lib/components/ui/input/index.js";
+    import {Checkbox} from "$lib/components/ui/checkbox/index.js";
+    import {Label} from "$lib/components/ui/label/index.js";
 
 
-    let { job = $bindable() } = $props();
+    let { job = $bindable(), canContinue = $bindable() } = $props();
 
     $effect(() => {
         if (job["copies"] < 1) {
@@ -48,6 +50,10 @@
     <h5>Copies (Keep Last {job["copies"]} Backup{job["copies"] > 1 ? "s":""})</h5>
     <Input bind:value={job["copies"]} type="number" placeholder="Number of Copies" />
 {/if}
+<br>
+
+<Checkbox id="portable" bind:checked={job["portable"]}></Checkbox>
+<Label for="portable">Copy this job to drive for multi-machine use</Label>
 
 <style>
     h2 {

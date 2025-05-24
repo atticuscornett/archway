@@ -26,6 +26,8 @@ newer versions of the program.
 - `output-dir` (string): The directory where the files will be copied/moved to.
 - `output-device` (string): The name of the device where the files will be copied/moved to. If blank, will move to any device that matches the output-dir.
 - `copies` (int): When the file-behavior is 'copy', this is the number of backups to keep.
+- `portable` (boolean): Whether the job is portable. If true, the job will be copied to the output device and will be
+imported on other devices.
 - `file-filters` (Object array): List of file filters to apply when searching for files to back up/archive.
   - `type` (string): The type of file filter.
     - **Values:**
