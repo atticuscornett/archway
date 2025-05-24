@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {Button} from "$lib/components/ui/button/index.js";
     import {Folder} from "@lucide/svelte";
     import {onMount} from "svelte";
@@ -9,8 +9,6 @@
     import {Checkbox} from "$lib/components/ui/checkbox/index.js";
 
     let {job = $bindable(), canContinue = $bindable()} = $props();
-
-    let drives = $state([]);
 
     onMount(async () => {
         canContinue = job["output-dir"] !== "";
@@ -48,6 +46,7 @@
             <h4 class="text-red-500">Are you sure you want to save to your main drive? This may cause unexpected behavior.</h4>
     {/if}
 {/if}
+<br>
 <Checkbox class="my-4" id="device-specific" bind:checked={job["output-device"]}></Checkbox>
 <Label for="device-specific">Use any device with this drive letter</Label>
 <br>

@@ -3,6 +3,7 @@
     import {Button} from "$lib/components/ui/button/index.js";
     import { ChevronLeft, ChevronRight } from '@lucide/svelte';
     import OutputSelect from "../components/JobSetup/OutputSelect.svelte";
+    import InputSelect from "../components/JobSetup/InputSelect.svelte";
 
     let step = $state(0);
     let canContinue = $state(true);
@@ -34,6 +35,9 @@
 {/if}
 {#if step === 1}
     <OutputSelect bind:job bind:canContinue/>
+{/if}
+{#if step === 2}
+    <InputSelect bind:job bind:canContinue/>
 {/if}
 
 {#if step > 0}

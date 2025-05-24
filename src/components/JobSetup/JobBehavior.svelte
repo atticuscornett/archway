@@ -4,6 +4,7 @@
     import {Input} from "$lib/components/ui/input/index.js";
     import {Checkbox} from "$lib/components/ui/checkbox/index.js";
     import {Label} from "$lib/components/ui/label/index.js";
+    import {onMount} from "svelte";
 
 
     let { job = $bindable(), canContinue = $bindable() } = $props();
@@ -13,6 +14,10 @@
             job["copies"] = 1;
         }
     })
+
+    onMount(() => {
+        canContinue = true;
+    });
 </script>
 
 <h2>Job Setup</h2>

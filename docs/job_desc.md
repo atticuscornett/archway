@@ -21,7 +21,7 @@ newer versions of the program.
   - `path` (string): The path to the directory.
     - **Values:** 
       - For library directories, the path is the library name.
-        - Supported libraries: 'photos', 'videos', 'documents', 'music', 'downloads'.
+        - Supported libraries: 'photos', 'videos', 'documents', 'music', 'downloads', 'desktop'.
       - For custom directories, the path is absolute.
 - `output-dir` (string): The directory where the files will be copied/moved to.
 - `output-device` (string): The name of the device where the files will be copied/moved to. If blank, will move to any device that matches the output-dir.
