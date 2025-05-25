@@ -46,7 +46,7 @@
             if (filter["type"] === "last-used") {
                 lastUsedFilter = true;
                 lastUsedFilterValue = filter["traits"]["lastused"];
-                // Restore to human readable format
+                // Restore to human-readable format
                 if (/^[0-9]$/.test(lastUsedFilterValue[0])){
                     let fixedValue = lastUsedFilterValue[0];
                     fixedValue += " ";
@@ -57,6 +57,11 @@
                 else {
                     lastUsedFilterValue = lastUsedFilterValue[0].toUpperCase() + lastUsedFilterValue.slice(1);
                 }
+            }
+
+            if (filter["type"] === "size") {
+                sizeFilter = true;
+                fileSizeFilterValue = filter["traits"]["size"];
             }
         }
     }
