@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {Switch} from "$lib/components/ui/switch/index.js";
     import {Label} from "$lib/components/ui/label/index.js";
     import * as Select from "$lib/components/ui/select/index.js";
@@ -22,6 +22,18 @@
         "monthly": ["1", "9 AM"]
     });
 
+    let addEnding = (day: number) => {
+        if (day === 1 || day === 21 || day === 31) {
+            return "st";
+        } else if (day === 2 || day === 22) {
+            return "nd";
+        } else if (day === 3 || day === 23) {
+            return "rd";
+        } else {
+            return "th";
+        }
+    }
+
 </script>
 
 <h2>Job Triggers</h2>
@@ -36,6 +48,7 @@
 <br>
 
 {#if onSchedule}
+    <h5>If Archway is not running when job is scheduled, it will not run.</h5>
     <div class="ml-4">
         <Switch bind:checked={scheduleEnabled.hourly} id="hourly"></Switch>
         <Label for="hourly" class="align-text-bottom text-lg">Hourly</Label>
@@ -57,5 +70,67 @@
                 </Select.Content>
             </Select.Root>
         {/if}
+        <br>
+        <Switch bind:checked={scheduleEnabled.weekly} id="weekly"></Switch>
+        <Label for="weekly" class="align-text-bottom text-lg">Weekly</Label>
+        {#if scheduleEnabled.weekly}
+            <br>
+            <Select.Root type="single" bind:value={scheduleTiming.weekly[0]}>
+                <Select.Trigger class="w-[180px]">
+                    on {scheduleTiming.weekly[0]}
+                </Select.Trigger>
+                <Select.Content>
+                    {#each ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as day}
+                        <Select.Item value={day} label={day}>
+                            {day}
+                        </Select.Item>
+                    {/each}
+                </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" bind:value={scheduleTiming.weekly[1]}>
+                <Select.Trigger class="w-[180px]">
+                    at {scheduleTiming.weekly[1]}
+                </Select.Trigger>
+                <Select.Content>
+                    {#each times as time}
+                        <Select.Item value={time} label={time}>
+                            {time}
+                        </Select.Item>
+                    {/each}
+                </Select.Content>
+            </Select.Root>
+        {/if}
+        <br>
+        <Switch bind:checked={scheduleEnabled.monthly} id="monthly"></Switch>
+        <Label for="monthly" class="align-text-bottom text-lg">Monthly</Label>
+        {#if scheduleEnabled.monthly}
+            <br>
+            <Select.Root type="single" bind:value={scheduleTiming.monthly[0]}>
+                <Select.Trigger class="w-[180px]">
+                    on the {scheduleTiming.monthly[0]}{addEnding(Number(scheduleTiming.monthly[0]))}
+                </Select.Trigger>
+                <Select.Content>
+                    {#each Array.from({length: 28}, (_, i) => i + 1) as day}
+                        <Select.Item value={String(day)} label={String(day)}>
+                            {day}{addEnding(day)}
+                        </Select.Item>
+                    {/each}
+                </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" bind:value={scheduleTiming.monthly[1]}>
+                <Select.Trigger class="w-[180px]">
+                    at {scheduleTiming.monthly[1]}
+                </Select.Trigger>
+                <Select.Content>
+                    {#each times as time}
+                        <Select.Item value={time} label={time}>
+                            {time}
+                        </Select.Item>
+                    {/each}
+                </Select.Content>
+            </Select.Root>
+        {/if}
     </div>
 {/if}
+
+<br class="mb-10">
