@@ -5,6 +5,7 @@
     import {Button} from "$lib/components/ui/button";
     import {Plus, Minus} from "@lucide/svelte";
     import {Input} from "$lib/components/ui/input";
+    import {onMount} from "svelte";
 
     let { job = $bindable(), canContinue = $bindable() } = $props();
 
@@ -22,6 +23,24 @@
     });
 
     let extensionInput = $state("");
+
+    let loadStateFromJob = () => {
+        for (let filter of job["file-filters"]) {
+            if (filter["type"] === "extension") {
+                typeFilter = true;
+                typeFilterList = filter["traits"]["extensions"];
+
+                for (let i = 0; i < typeFilterList.length; i++) {
+                    if (typeFilterList[i].endsWith(":special")) {
+                        typeFilterOptions[typeFilterList[i].replace(":special", "")] = true;
+                        typeFilterList.splice(Number(i), 1);
+                        i--;
+                    }
+                }
+
+            }
+        }
+    }
 
     let updateJob = () => {
         job["file-filters"] = [];
@@ -75,6 +94,11 @@
     let removeExtension = (index: number) => {
         typeFilterList.splice(index, 1);
     }
+
+    onMount(() => {
+        loadStateFromJob();
+        canContinue = true;
+    });
 </script>
 
 <h2>File Filters</h2>
@@ -141,3 +165,5 @@
 {#if sizeFilter}
     <h5>Only backup/archive files that are larger than:</h5>
 {/if}
+
+<br class="mb-10">
