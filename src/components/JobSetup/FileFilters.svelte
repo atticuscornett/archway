@@ -15,6 +15,7 @@
     let sizeFilter = $state(false);
 
     let lastUsedFilterValue = $state("Month");
+    let fileSizeFilterValue = $state(1000);
 
     let typeFilterList: string[] = $state([]);
     let typeFilterOptions = $state({
@@ -96,6 +97,19 @@
                 "type": "last-used",
                 "traits": {
                     "lastused": lastUsedFilterValue.replace(" ", "").toLowerCase()
+                }
+            });
+        }
+
+        if (sizeFilter) {
+            if (fileSizeFilterValue < 1) {
+                fileSizeFilterValue = 1;
+            }
+
+            job["file-filters"].push({
+                "type": "size",
+                "traits": {
+                    "size": fileSizeFilterValue
                 }
             });
         }
@@ -202,6 +216,9 @@
 
 {#if sizeFilter}
     <h5>Only backup/archive files that are larger than:</h5>
+    <Input onchange={updateJob} bind:value={fileSizeFilterValue} min="1" type="number" placeholder="Size in MB" class="w-[180px] inline"/>
+    <Label for="sizeFilter" class="align-baseline text-lg inline">MB</Label>
+    <br>
 {/if}
 
 <br class="mb-10">
