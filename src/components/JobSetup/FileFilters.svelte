@@ -23,6 +23,43 @@
 
     let extensionInput = $state("");
 
+    let updateJob = () => {
+        job["file-filters"] = [];
+
+        if (typeFilter) {
+            let fullFilterList = [];
+            if (typeFilterOptions.documents) {
+                fullFilterList.push("documents:special");
+            }
+            if (typeFilterOptions.videos) {
+                fullFilterList.push("videos:special");
+            }
+            if (typeFilterOptions.pictures) {
+                fullFilterList.push("pictures:special");
+            }
+            if (typeFilterOptions.music) {
+                fullFilterList.push("music:special");
+            }
+            if (typeFilterOptions.archives) {
+                fullFilterList.push("archives:special");
+            }
+
+            fullFilterList.concat(typeFilterList);
+
+            job["file-filters"].push({
+                "type": "extension",
+                "traits": {
+                    "extensions": fullFilterList
+                }
+            });
+        }
+
+
+
+        console.log(job["file-filters"]);
+    }
+
+
     let addExtensions = () => {
         if (extensionInput === "") {
             return;
@@ -30,7 +67,10 @@
         let exts = extensionInput.split(",").map(ext => ext.trim()).map(ext => ext.replace(/^\./, ""));
         typeFilterList = [...typeFilterList, ...exts];
         extensionInput = "";
+
+        updateJob();
     }
+
 
     let removeExtension = (index: number) => {
         typeFilterList.splice(index, 1);
@@ -50,19 +90,19 @@
         <div>
             <h3>Categories</h3>
 
-            <Switch id="documents" bind:checked={typeFilterOptions.documents}></Switch>
+            <Switch id="documents" onCheckedChange={updateJob} bind:checked={typeFilterOptions.documents}></Switch>
             <Label for="documents" class="align-text-bottom text-lg">Documents (.docx, .pptx, .pdf, etc.)</Label>
             <br>
-            <Switch id="videos" bind:checked={typeFilterOptions.videos}></Switch>
+            <Switch id="videos" onCheckedChange={updateJob} bind:checked={typeFilterOptions.videos}></Switch>
             <Label for="videos" class="align-text-bottom text-lg">Videos (.mp4, .mov, etc.)</Label>
             <br>
-            <Switch id="pictures" bind:checked={typeFilterOptions.pictures}></Switch>
+            <Switch id="pictures" onCheckedChange={updateJob} bind:checked={typeFilterOptions.pictures}></Switch>
             <Label for="pictures" class="align-text-bottom text-lg">Pictures (.jpg, .png, etc.)</Label>
             <br>
-            <Switch id="music" bind:checked={typeFilterOptions.music}></Switch>
+            <Switch id="music" onCheckedChange={updateJob} bind:checked={typeFilterOptions.music}></Switch>
             <Label for="music" class="align-text-bottom text-lg">Music (.mp3, .wav, etc.)</Label>
             <br>
-            <Switch id="archives" bind:checked={typeFilterOptions.archives}></Switch>
+            <Switch id="archives" onCheckedChange={updateJob} bind:checked={typeFilterOptions.archives}></Switch>
             <Label for="archives" class="align-text-bottom text-lg">Archives (.zip, .tar, etc.)</Label>
         </div>
         <div class="ml-5">
