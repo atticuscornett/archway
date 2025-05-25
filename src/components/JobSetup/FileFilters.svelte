@@ -2,6 +2,7 @@
     import {Switch} from "$lib/components/ui/switch/index.js";
     import {Label} from "$lib/components/ui/label/index.js";
     import * as Dialog from "$lib/components/ui/dialog/index.js";
+    import * as Select from "$lib/components/ui/select/index.js";
     import {Button} from "$lib/components/ui/button";
     import {Plus, Minus} from "@lucide/svelte";
     import {Input} from "$lib/components/ui/input";
@@ -12,6 +13,8 @@
     let typeFilter = $state(false);
     let lastUsedFilter = $state(false);
     let sizeFilter = $state(false);
+
+    let lastUsedFilterValue = $state("Month");
 
     let typeFilterList: string[] = $state([]);
     let typeFilterOptions = $state({
@@ -73,6 +76,14 @@
             });
         }
 
+        if (lastUsedFilter) {
+            job["file-filters"].push({
+                "type": "last-used",
+                "traits": {
+                    "lastused": lastUsedFilterValue.replace(" ", "").toLowerCase()
+                }
+            });
+        }
 
 
         console.log(job["file-filters"]);
@@ -103,7 +114,7 @@
 
 <h2>File Filters</h2>
 
-<Switch id="typeFilter" bind:checked={typeFilter}></Switch>
+<Switch id="typeFilter" bind:checked={typeFilter} onCheckedChange={updateJob}></Switch>
 <Label for="typeFilter" class="align-text-bottom mt-4 text-lg">Filter by File Type</Label>
 <br>
 
@@ -150,12 +161,24 @@
     </div>
 {/if}
 
-<Switch id="lastUsedFilter" bind:checked={lastUsedFilter}></Switch>
+<Switch id="lastUsedFilter" bind:checked={lastUsedFilter} onCheckedChange={updateJob}></Switch>
 <Label for="lastUsedFilter" class="align-text-bottom mt-4 text-lg">Filter by Last Use</Label>
 <br>
 
 {#if lastUsedFilter}
     <h5>Only backup/archive files that have not been used in the last:</h5>
+    <Select.Root type="single" bind:value={lastUsedFilterValue} onValueChange={updateJob}>
+        <Select.Trigger class="w-[180px] mb-5">{lastUsedFilterValue}</Select.Trigger>
+        <Select.Content>
+            <Select.Item value="Week">Week</Select.Item>
+            <Select.Item value="2 Weeks">Two Weeks</Select.Item>
+            <Select.Item value="Month">Month</Select.Item>
+            <Select.Item value="2 Months">Two Months</Select.Item>
+            <Select.Item value="3 Months">Three Months</Select.Item>
+            <Select.Item value="6 Months">Six Months</Select.Item>
+            <Select.Item value="Year">Year</Select.Item>
+        </Select.Content>
+    </Select.Root>
 {/if}
 
 <Switch id="sizeFilter" bind:checked={sizeFilter}></Switch>
