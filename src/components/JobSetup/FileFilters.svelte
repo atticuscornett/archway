@@ -40,7 +40,22 @@
                         i--;
                     }
                 }
+            }
 
+            if (filter["type"] === "last-used") {
+                lastUsedFilter = true;
+                lastUsedFilterValue = filter["traits"]["lastused"];
+                // Restore to human readable format
+                if (/^[0-9]$/.test(lastUsedFilterValue[0])){
+                    let fixedValue = lastUsedFilterValue[0];
+                    fixedValue += " ";
+                    fixedValue += lastUsedFilterValue[1].toUpperCase();
+                    fixedValue += lastUsedFilterValue.slice(2);
+                    lastUsedFilterValue = fixedValue;
+                }
+                else {
+                    lastUsedFilterValue = lastUsedFilterValue[0].toUpperCase() + lastUsedFilterValue.slice(1);
+                }
             }
         }
     }
@@ -171,11 +186,11 @@
         <Select.Trigger class="w-[180px] mb-5">{lastUsedFilterValue}</Select.Trigger>
         <Select.Content>
             <Select.Item value="Week">Week</Select.Item>
-            <Select.Item value="2 Weeks">Two Weeks</Select.Item>
+            <Select.Item value="2 Weeks">2 Weeks</Select.Item>
             <Select.Item value="Month">Month</Select.Item>
-            <Select.Item value="2 Months">Two Months</Select.Item>
-            <Select.Item value="3 Months">Three Months</Select.Item>
-            <Select.Item value="6 Months">Six Months</Select.Item>
+            <Select.Item value="2 Months">2 Months</Select.Item>
+            <Select.Item value="3 Months">3 Months</Select.Item>
+            <Select.Item value="6 Months">6 Months</Select.Item>
             <Select.Item value="Year">Year</Select.Item>
         </Select.Content>
     </Select.Root>
