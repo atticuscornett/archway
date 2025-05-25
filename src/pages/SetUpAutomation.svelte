@@ -5,6 +5,7 @@
     import OutputSelect from "../components/JobSetup/OutputSelect.svelte";
     import InputSelect from "../components/JobSetup/InputSelect.svelte";
     import FileFilters from "../components/JobSetup/FileFilters.svelte";
+    import JobTriggers from "../components/JobSetup/JobTriggers.svelte";
 
     let step = $state(0);
     let canContinue = $state(true);
@@ -43,8 +44,13 @@
 {#if step === 3}
     <FileFilters bind:job bind:canContinue/>
 {/if}
+{#if step === 4}
+    <JobTriggers bind:job bind:canContinue/>
+{/if}
 
 {#if step > 0}
     <Button variant="secondary" class="fixed bottom-4 left-4" onclick={prevStep}><ChevronLeft/> Back</Button>
 {/if}
-<Button class="fixed bottom-4 right-4" onclick={nextStep} disabled={!canContinue}>Next <ChevronRight/></Button>
+<Button class="fixed bottom-4 right-4" onclick={nextStep} disabled={!canContinue}>
+    {(step === 4) ? "Finish" : "Next" } <ChevronRight/>
+</Button>
