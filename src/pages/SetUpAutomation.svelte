@@ -27,6 +27,11 @@
 
     let nextStep = () => {
         step += 1;
+
+        if (step === 5) {
+            invoke("setup_job", {jobInfo: JSON.stringify(job)});
+            page = "Dashboard";
+        }
     }
 
     let prevStep = () => {
