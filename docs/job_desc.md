@@ -7,14 +7,14 @@ newer versions of the program.
 
 ## Version 1
 
-- `job-name` (string): The name of the job.
+- `job_name` (string): The name of the job.
 - `uuid` (string): The UUID of the job.
-- `file-behavior` (string): What to do with the files after the job is done.
+- `file_behavior` (string): What to do with the files after the job is done.
   - **Values:**
     - `'copy'` (string): Copy files to the new location.
     - `'move'` (string): Move files to the new location, deleting the original files.
-- `input-dirs` (Object array): List of directories to search for files to back up.
-  - `type` (string): The type of input directory. 
+- `input_dirs` (Object array): List of directories to search for files to back up.
+  - `path_type` (string): The type of input directory. 
     - **Values:**
       - `'library'` (string): A library directory.
       - `'custom'` (string): A custom directory.
@@ -23,13 +23,13 @@ newer versions of the program.
       - For library directories, the path is the library name.
         - Supported libraries: 'photos', 'videos', 'documents', 'music', 'downloads', 'desktop'.
       - For custom directories, the path is absolute.
-- `output-dir` (string): The directory where the files will be copied/moved to.
-- `output-device` (string): The name of the device where the files will be copied/moved to. If blank, will move to any device that matches the output-dir.
-- `copies` (int): When the file-behavior is 'copy', this is the number of backups to keep.
+- `output_dir` (string): The directory where the files will be copied/moved to.
+- `output_device` (string): The name of the device where the files will be copied/moved to. If blank, will move to any device that matches the output_dir.
+- `copies` (int): When the file_behavior is 'copy', this is the number of backups to keep.
 - `portable` (boolean): Whether the job is portable. If true, the job will be copied to the output device and will be
 imported on other devices.
-- `file-filters` (Object array): List of file filters to apply when searching for files to back up/archive.
-  - `type` (string): The type of file filter.
+- `file_filters` (Object array): List of file filters to apply when searching for files to back up/archive.
+  - `filter_type` (string): The type of file filter.
     - **Values:**
       - `'extension'` (string): A file extension filter.
       - `'lastused'` (string): A regular expression filter.
@@ -54,7 +54,7 @@ imported on other devices.
             - `'downloads'` (string): Downloads.
             - `'desktop'` (string): Desktop files.
 - `triggers` (Object array): List of triggers to start the job.
-  - `type` (string): The type of trigger.
+  - `trigger_type` (string): The type of trigger.
     - **Values:**
       - `'time'` (string): A time-based trigger.
       - `'event'` (string): An event-based trigger.
@@ -67,3 +67,4 @@ imported on other devices.
         - `'daily'` (string): Run the job every day.
         - `'weekly'` (string): Run the job every week.
         - `'monthly'` (string): Run the job every month.
+- `version` (int): The version of the job file.

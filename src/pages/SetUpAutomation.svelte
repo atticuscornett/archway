@@ -6,31 +6,42 @@
     import InputSelect from "../components/JobSetup/InputSelect.svelte";
     import FileFilters from "../components/JobSetup/FileFilters.svelte";
     import JobTriggers from "../components/JobSetup/JobTriggers.svelte";
+    import {toast} from "svelte-sonner";
 
     let { page = $bindable() } = $props();
 
     let step = $state(0);
     let canContinue = $state(true);
     let job = $state({
-        "job-name": "New Job",
+        "job_name": "New Job",
         "uuid": crypto.randomUUID(),
-        "file-behavior": "copy",
-        "input-dirs": [],
-        "output-dir": "",
+        "file_behavior": "copy",
+        "input_dirs": [],
+        "output_dir": "",
         "copies": 1,
         "portable": false,
-        "file-filters": [],
+        "file_filters": [],
         "triggers": [],
-        "new-folder": false,
-        "output-device": false
+        "new_folder": false,
+        "output_device": "special:any",
+        "version": 1
     });
 
-    let nextStep = () => {
+    let nextStep = async () => {
         step += 1;
 
         if (step === 5) {
-            invoke("setup_job", {jobInfo: JSON.stringify(job)});
+            let result = await invoke("setup_job", {jobInfo: JSON.stringify(job)});
             page = "Dashboard";
+
+            console.log(JSON.stringify(job));
+
+            if (result) {
+                toast.success("Job created successfully!");
+            }
+            else {
+                toast.error("Failed to create job. Please try again.");
+            }
         }
     }
 

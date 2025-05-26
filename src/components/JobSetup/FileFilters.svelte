@@ -29,8 +29,8 @@
     let extensionInput = $state("");
 
     let loadStateFromJob = () => {
-        for (let filter of job["file-filters"]) {
-            if (filter["type"] === "extension") {
+        for (let filter of job["file_filters"]) {
+            if (filter["filter_type"] === "extension") {
                 typeFilter = true;
                 typeFilterList = filter["traits"]["extensions"];
 
@@ -43,7 +43,7 @@
                 }
             }
 
-            if (filter["type"] === "last-used") {
+            if (filter["filter_type"] === "last-used") {
                 lastUsedFilter = true;
                 lastUsedFilterValue = filter["traits"]["lastused"];
                 // Restore to human-readable format
@@ -59,7 +59,7 @@
                 }
             }
 
-            if (filter["type"] === "size") {
+            if (filter["filter_type"] === "size") {
                 sizeFilter = true;
                 fileSizeFilterValue = filter["traits"]["size"];
             }
@@ -67,7 +67,7 @@
     }
 
     let updateJob = () => {
-        job["file-filters"] = [];
+        job["file_filters"] = [];
 
         if (typeFilter) {
             let fullFilterList = [];
@@ -89,8 +89,8 @@
 
             fullFilterList.concat(typeFilterList);
 
-            job["file-filters"].push({
-                "type": "extension",
+            job["file_filters"].push({
+                "filter_type": "extension",
                 "traits": {
                     "extensions": fullFilterList
                 }
@@ -98,8 +98,8 @@
         }
 
         if (lastUsedFilter) {
-            job["file-filters"].push({
-                "type": "last-used",
+            job["file_filters"].push({
+                "filter_type": "last-used",
                 "traits": {
                     "lastused": lastUsedFilterValue.replace(" ", "").toLowerCase()
                 }
@@ -111,8 +111,8 @@
                 fileSizeFilterValue = 1;
             }
 
-            job["file-filters"].push({
-                "type": "size",
+            job["file_filters"].push({
+                "filter_type": "size",
                 "traits": {
                     "size": fileSizeFilterValue
                 }
@@ -120,7 +120,7 @@
         }
 
 
-        console.log(job["file-filters"]);
+        console.log(job["file_filters"]);
     }
 
 

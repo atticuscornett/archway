@@ -41,7 +41,7 @@
 
         if (onDeviceConnect){
             job["triggers"].push({
-                "type": "event",
+                "trigger_type": "event",
                 "traits": {
                     "event": "device-connection"
                 }
@@ -52,7 +52,7 @@
         if (onSchedule){
             if (scheduleEnabled.hourly) {
                 job["triggers"].push({
-                    "type": "time",
+                    "trigger_type": "time",
                     "traits": {
                         "event": "hourly"
                     }
@@ -63,7 +63,7 @@
             for (let timing of timings){
                 if (scheduleEnabled[timing]) {
                     job["triggers"].push({
-                        "type": "time",
+                        "trigger_type": "time",
                         "traits": {
                             "event": timing,
                             "time": scheduleTiming[timing]

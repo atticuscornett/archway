@@ -1,3 +1,6 @@
+mod structs;
+
+use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use sysinfo::Disks;
 
@@ -27,9 +30,22 @@ fn get_documents() -> String {
     return dirs::document_dir().unwrap().to_string_lossy().to_string();
 }
 
+fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::Error> {
+    serde_json::from_str(job_info)
+}
+
 #[tauri::command]
-fn setup_job(job_info: String){
-    println!("{}", job_info);
+fn setup_job(job_info: String) -> bool {
+    let new_job: structs::JobInfo = match get_job_from_string(&job_info) {
+        Ok(job) => job,
+        Err(err) => {
+            println!("{}", err);
+            return false;
+        },
+    };
+
+    println!("{}", new_job.job_name);
+    return true;
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

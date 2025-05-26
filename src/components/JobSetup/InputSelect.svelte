@@ -18,32 +18,32 @@
     });
 
     let refreshInputDirs = () => {
-        job["input-dirs"] = [];
+        job["input_dirs"] = [];
         if (libraries.documents) {
-            job["input-dirs"].push({"type": "library", "path": "documents"});
+            job["input_dirs"].push({"path_type": "library", "path": "documents"});
         }
         if (libraries.music) {
-            job["input-dirs"].push({"type": "library", "path": "music"});
+            job["input_dirs"].push({"path_type": "library", "path": "music"});
         }
         if (libraries.desktop) {
-            job["input-dirs"].push({"type": "library", "path": "desktop"});
+            job["input_dirs"].push({"path_type": "library", "path": "desktop"});
         }
         if (libraries.downloads) {
-            job["input-dirs"].push({"type": "library", "path": "downloads"});
+            job["input_dirs"].push({"path_type": "library", "path": "downloads"});
         }
         if (libraries.pictures) {
-            job["input-dirs"].push({"type": "library", "path": "pictures"});
+            job["input_dirs"].push({"path_type": "library", "path": "pictures"});
         }
         if (libraries.videos) {
-            job["input-dirs"].push({"type": "library", "path": "videos"});
+            job["input_dirs"].push({"path_type": "library", "path": "videos"});
         }
         if (customFolders.length > 0) {
             customFolders.forEach(folder => {
-                job["input-dirs"].push({"type": "custom", "path": folder});
+                job["input_dirs"].push({"path_type": "custom", "path": folder});
             });
         }
 
-        console.log(job["input-dirs"]);
+        console.log(job["input_dirs"]);
     }
 
     let customFolders: string[] = $state([]);
@@ -75,11 +75,11 @@
     onMount(()=> {
         canContinue = true;
 
-        for (let i = 0; i < job["input-dirs"].length; i++) {
-            if (job["input-dirs"][i]["type"] === "custom") {
-                customFolders.push(job["input-dirs"][i]["path"]);
+        for (let i = 0; i < job["input_dirs"].length; i++) {
+            if (job["input_dirs"][i]["path_type"] === "custom") {
+                customFolders.push(job["input_dirs"][i]["path"]);
             } else {
-                libraries[job["input-dirs"][i]["path"]] = true;
+                libraries[job["input_dirs"][i]["path"]] = true;
             }
         }
     })

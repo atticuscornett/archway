@@ -24,19 +24,19 @@
 
 
 <h5>Job Name</h5>
-<Input bind:value={job["job-name"]} placeholder="Job Name" />
+<Input bind:value={job["job_name"]} placeholder="Job Name" />
 <h6>UUID: {job.uuid}</h6>
 <br>
 <h5>File Behavior</h5>
-<Select.Root type="single" bind:value={job["file-behavior"]} >
+<Select.Root type="single" bind:value={job["file_behavior"]} >
     <Select.Trigger class="w-[180px]">
-        {#if job["file-behavior"] === "copy"}
+        {#if job["file_behavior"] === "copy"}
             <Files></Files>
         {:else}
             <FileSliders></FileSliders>
         {/if}
         &emsp;
-        {job["file-behavior"].replace("copy", "Copy Files").replace("move", "Move Files")}
+        {job["file_behavior"].replace("copy", "Copy Files").replace("move", "Move Files")}
     </Select.Trigger>
     <Select.Content>
         <Select.Item value="copy" label="Copy">
@@ -50,7 +50,7 @@
     </Select.Content>
 </Select.Root>
 
-{#if job["file-behavior"] === "copy"}
+{#if job["file_behavior"] === "copy"}
     <br>
     <h5>Copies (Keep Last {job["copies"]} Backup{job["copies"] > 1 ? "s":""})</h5>
     <Input bind:value={job["copies"]} type="number" placeholder="Number of Copies" />
