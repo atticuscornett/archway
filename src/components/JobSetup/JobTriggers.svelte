@@ -10,6 +10,7 @@
         "11 PM"];
 
     let onSchedule = $state(false);
+    let onDeviceConnect = $state(false);
     let scheduleEnabled = $state({
         "hourly": false,
         "daily": false,
@@ -17,7 +18,7 @@
         "monthly": false,
     });
     let scheduleTiming = $state({
-        "daily": "9 AM",
+        "daily": ["9 AM"],
         "weekly": ["Monday", "9 AM"],
         "monthly": ["1", "9 AM"]
     });
@@ -34,13 +35,52 @@
         }
     }
 
+    let updateJob = () => {
+        job["triggers"] = [];
+
+        if (onDeviceConnect){
+            job["triggers"].push({
+                "type": "event",
+                "traits": {
+                    "event": "device-connection"
+                }
+            }
+            );
+        }
+
+        if (onSchedule){
+            if (scheduleEnabled.hourly) {
+                job["triggers"].push({
+                    "type": "time",
+                    "traits": {
+                        "event": "hourly"
+                    }
+                });
+            }
+
+            let timings = ["daily", "weekly", "monthly"];
+            for (let timing of timings){
+                if (scheduleEnabled[timing]) {
+                    job["triggers"].push({
+                        "type": "time",
+                        "traits": {
+                            "event": timing,
+                            "time": scheduleTiming[timing]
+                        }
+                    });
+                }
+            }
+        }
+        console.log(job["triggers"]);
+    }
+
 </script>
 
 <h2>Job Triggers</h2>
 <h4>The backup/archive will run whenever any of these occur:</h4>
 <h5 class="mb-4">Job triggers may run any time within a minute of the event.</h5>
 
-<Switch id="devicePlugIn"></Switch>
+<Switch id="devicePlugIn" bind:checked={onDeviceConnect} onCheckedChange={updateJob}></Switch>
 <Label for="devicePlugIn" class="align-text-bottom text-lg">Output Device Connected</Label>
 <br>
 <Switch bind:checked={onSchedule} id="schedule"></Switch>
@@ -50,14 +90,14 @@
 {#if onSchedule}
     <h5>If Archway is not running when job is scheduled, it will not run.</h5>
     <div class="ml-4">
-        <Switch bind:checked={scheduleEnabled.hourly} id="hourly"></Switch>
+        <Switch bind:checked={scheduleEnabled.hourly} id="hourly" onCheckedChange={updateJob}></Switch>
         <Label for="hourly" class="align-text-bottom text-lg">Hourly</Label>
         <br>
-        <Switch bind:checked={scheduleEnabled.daily} id="daily"></Switch>
+        <Switch bind:checked={scheduleEnabled.daily} id="daily" onCheckedChange={updateJob}></Switch>
         <Label for="daily" class="align-text-bottom text-lg">Daily</Label>
         {#if scheduleEnabled.daily}
             <br>
-            <Select.Root type="single" bind:value={scheduleTiming.daily}>
+            <Select.Root type="single" bind:value={scheduleTiming.daily[0]} onValueChange={updateJob}>
                 <Select.Trigger class="w-[180px]">
                     at {scheduleTiming.daily}
                 </Select.Trigger>
@@ -71,11 +111,11 @@
             </Select.Root>
         {/if}
         <br>
-        <Switch bind:checked={scheduleEnabled.weekly} id="weekly"></Switch>
+        <Switch bind:checked={scheduleEnabled.weekly} id="weekly" onCheckedChange={updateJob}></Switch>
         <Label for="weekly" class="align-text-bottom text-lg">Weekly</Label>
         {#if scheduleEnabled.weekly}
             <br>
-            <Select.Root type="single" bind:value={scheduleTiming.weekly[0]}>
+            <Select.Root type="single" bind:value={scheduleTiming.weekly[0]} onValueChange={updateJob}>
                 <Select.Trigger class="w-[180px]">
                     on {scheduleTiming.weekly[0]}
                 </Select.Trigger>
@@ -87,7 +127,7 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
-            <Select.Root type="single" bind:value={scheduleTiming.weekly[1]}>
+            <Select.Root type="single" bind:value={scheduleTiming.weekly[1]} onValueChange={updateJob}>
                 <Select.Trigger class="w-[180px]">
                     at {scheduleTiming.weekly[1]}
                 </Select.Trigger>
@@ -101,11 +141,11 @@
             </Select.Root>
         {/if}
         <br>
-        <Switch bind:checked={scheduleEnabled.monthly} id="monthly"></Switch>
+        <Switch bind:checked={scheduleEnabled.monthly} onCheckedChange={updateJob} id="monthly"></Switch>
         <Label for="monthly" class="align-text-bottom text-lg">Monthly</Label>
         {#if scheduleEnabled.monthly}
             <br>
-            <Select.Root type="single" bind:value={scheduleTiming.monthly[0]}>
+            <Select.Root type="single" bind:value={scheduleTiming.monthly[0]} onValueChange={updateJob}>
                 <Select.Trigger class="w-[180px]">
                     on the {scheduleTiming.monthly[0]}{addEnding(Number(scheduleTiming.monthly[0]))}
                 </Select.Trigger>
@@ -117,7 +157,7 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
-            <Select.Root type="single" bind:value={scheduleTiming.monthly[1]}>
+            <Select.Root type="single" bind:value={scheduleTiming.monthly[1]} onValueChange={updateJob}>
                 <Select.Trigger class="w-[180px]">
                     at {scheduleTiming.monthly[1]}
                 </Select.Trigger>

@@ -59,7 +59,7 @@ imported on other devices.
       - `'time'` (string): A time-based trigger.
       - `'event'` (string): An event-based trigger.
   - `traits` (Object):
-    - `time` (string): The time to run the job.
+    - `time` (String array): The time to run the job.
     - `event` (string): The event to trigger the job.
       - **Values:**
         - `'device-connection'` (string): Trigger when a device is connected.
