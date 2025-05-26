@@ -2,11 +2,13 @@
     import { invoke } from "@tauri-apps/api/core";
     import {Calendar} from "$lib/components/ui/calendar";
     import { toast } from "svelte-sonner";
-    import QuickSetupPage from "../pages/QuickSetupPage.svelte";
+    import WelcomePage from "../pages/WelcomePage.svelte";
+    import SetUpAutomation from "../pages/SetUpAutomation.svelte";
 
     let name = $state("");
     let greetMsg = $state("");
     window.invoke = invoke;
+    let page = $state("WelcomePage");
 
     async function greet(event: Event) {
         event.preventDefault();
@@ -22,7 +24,12 @@
 </script>
 
 <main >
-    <QuickSetupPage></QuickSetupPage>
+    {#if page === "WelcomePage"}
+        <WelcomePage bind:page></WelcomePage>
+    {/if}
+    {#if page === "SetUpAutomation"}
+        <SetUpAutomation bind:page></SetUpAutomation>
+    {/if}
 
 <!--    <div class="row">-->
 <!--        <a href="https://vite.dev" target="_blank">-->

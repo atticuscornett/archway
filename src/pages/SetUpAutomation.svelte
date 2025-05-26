@@ -7,6 +7,8 @@
     import FileFilters from "../components/JobSetup/FileFilters.svelte";
     import JobTriggers from "../components/JobSetup/JobTriggers.svelte";
 
+    let { page = $bindable() } = $props();
+
     let step = $state(0);
     let canContinue = $state(true);
     let job = $state({

@@ -4,29 +4,22 @@
     import * as Select from "$lib/components/ui/select/index.js";
     import SetUpAutomation from "./SetUpAutomation.svelte";
 
-    let page = $state("welcome");
+    let { page = $bindable() } = $props();
 
     let job = $state({
         type: "copy"
     });
 </script>
 
-{#if page === "welcome"}
-    <div class="center-screen">
-        <img src="src/img/ArchwayFull.svg" alt="Archway Logo" class="logo" />
-        <h1>Welcome to Archway!</h1>
-        <h2>Let's get your first automation set up.</h2>
-        <div class="small-margin">
-            <Button onclick={()=>{page = "copy-or-move"}}>Quick Setup</Button>
-            <Button variant="secondary">No, thanks. I'll set up later.</Button>
-        </div>
+<div class="center-screen">
+    <img src="src/img/ArchwayFull.svg" alt="Archway Logo" class="logo" />
+    <h1>Welcome to Archway!</h1>
+    <h2>Let's get your first automation set up.</h2>
+    <div class="small-margin">
+        <Button onclick={()=>{page = "SetUpAutomation"}}>Quick Setup</Button>
+        <Button variant="secondary">No, thanks. I'll set up later.</Button>
     </div>
-{/if}
-
-
-{#if page === "copy-or-move"}
-    <SetUpAutomation></SetUpAutomation>
-{/if}
+</div>
 
 <style>
     .logo {
