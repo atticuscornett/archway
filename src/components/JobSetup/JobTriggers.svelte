@@ -2,6 +2,7 @@
     import {Switch} from "$lib/components/ui/switch/index.js";
     import {Label} from "$lib/components/ui/label/index.js";
     import * as Select from "$lib/components/ui/select/index.js";
+    import {onMount} from "svelte";
 
     let { job = $bindable(), canContinue = $bindable() } = $props();
 
@@ -74,6 +75,35 @@
         console.log(job["triggers"]);
     }
 
+    let loadStateFromJob = () => {
+        for (let trigger of job["triggers"]) {
+            if (trigger.type === "event" && trigger.traits.event === "device-connection") {
+                onDeviceConnect = true;
+            } else if (trigger.type === "time") {
+                onSchedule = true;
+                if (trigger.traits.event === "hourly") {
+                    scheduleEnabled.hourly = true;
+                } else if (trigger.traits.event === "daily") {
+                    scheduleEnabled.daily = true;
+                    scheduleTiming.daily[0] = trigger.traits.time;
+                } else if (trigger.traits.event === "weekly") {
+                    scheduleEnabled.weekly = true;
+                    scheduleTiming.weekly[0] = trigger.traits.time[0];
+                    scheduleTiming.weekly[1] = trigger.traits.time[1];
+                } else if (trigger.traits.event === "monthly") {
+                    scheduleEnabled.monthly = true;
+                    scheduleTiming.monthly[0] = trigger.traits.time[0];
+                    scheduleTiming.monthly[1] = trigger.traits.time[1];
+                }
+            }
+        }
+    }
+
+    onMount(() => {
+        loadStateFromJob();
+        canContinue = true;
+    });
+
 </script>
 
 <h2>Job Triggers</h2>
@@ -83,7 +113,7 @@
 <Switch id="devicePlugIn" bind:checked={onDeviceConnect} onCheckedChange={updateJob}></Switch>
 <Label for="devicePlugIn" class="align-text-bottom text-lg">Output Device Connected</Label>
 <br>
-<Switch bind:checked={onSchedule} id="schedule"></Switch>
+<Switch bind:checked={onSchedule} id="schedule" onCheckedChange={updateJob}></Switch>
 <Label for="schedule" class="align-text-bottom text-lg">On A Schedule</Label>
 <br>
 
