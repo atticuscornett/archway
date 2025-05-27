@@ -23,7 +23,7 @@
         "file_filters": [],
         "triggers": [],
         "new_folder": false,
-        "output_device": "special:any",
+        "output_device": "special:thisdrive",
         "version": 1
     });
 

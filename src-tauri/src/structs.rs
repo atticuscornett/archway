@@ -45,3 +45,10 @@ pub(crate) struct JobInfo {
     pub triggers: Vec<Trigger>,
     pub version: u32
 }
+
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct DriveInfoFile {
+    pub uuid: String,
+    pub jobs: Vec<JobInfo>
+}

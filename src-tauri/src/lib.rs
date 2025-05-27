@@ -1,8 +1,10 @@
 mod structs;
+mod drive_manager;
 
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use sysinfo::Disks;
+use std::path::Path;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -34,9 +36,20 @@ fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::E
     serde_json::from_str(job_info)
 }
 
+fn get_root_drive(path: &str) -> Option<String> {
+    let path = Path::new(path);
+    if let Some(component) = path.components().next() {
+        if let std::path::Component::Prefix(prefix_component) = component {
+            return Some(prefix_component.as_os_str().to_string_lossy().to_string());
+        }
+    }
+    None
+}
+
+
 #[tauri::command]
 fn setup_job(job_info: String) -> bool {
-    let new_job: structs::JobInfo = match get_job_from_string(&job_info) {
+    let mut new_job: structs::JobInfo = match get_job_from_string(&job_info) {
         Ok(job) => job,
         Err(err) => {
             println!("{}", err);
@@ -44,7 +57,40 @@ fn setup_job(job_info: String) -> bool {
         },
     };
 
+    // Assign job to drive
+    if new_job.output_device == "special:thisdrive" {
+        // Determine drive from output folder
+        let root_drive = match get_root_drive(&new_job.output_dir) {
+            Some(drive) => drive,
+            None => {
+                println!("Failed to determine root drive for output directory.");
+                return false;
+            },
+        };
+        println!("Root drive is {}", root_drive);
+
+        // Determine or create drive UUID
+        let drive_uuid = drive_manager::get_drive_uuid(&root_drive);
+        if drive_uuid.is_empty() {
+            println!("Failed to get or create drive UUID.");
+            return false;
+        }
+        println!("Drive UUID is {}", drive_uuid);
+
+        // Update job with drive UUID
+        new_job.output_device = drive_uuid.clone();
+    }
+
+    let job_json = match serde_json::to_string(&new_job) {
+        Ok(json) => json,
+        Err(err) => {
+            println!("{}", err);
+            return false;
+        },
+    };
+
     println!("{}", new_job.job_name);
+    println!("{}", job_json);
     return true;
 }
 

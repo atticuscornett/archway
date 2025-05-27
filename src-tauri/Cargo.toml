@@ -1,5 +1,5 @@
 [package]
-name = "archway"
+name = "Archway"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
@@ -25,4 +25,9 @@ serde_json = "1"
 sysinfo = "0.35.1"
 tauri-plugin-dialog = "2"
 dirs = "6.0.0"
+[dependencies.uuid]
+version = "1.17.0"
+features = [
+    "v4",
+]
 
