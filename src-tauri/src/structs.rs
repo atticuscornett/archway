@@ -1,37 +1,37 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct InputFile {
     pub path_type: String,
-    pub path: String
+    pub path: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct FilterTraits {
-    pub size : Option<u64>,
+    pub size: Option<u64>,
     pub lastused: Option<String>,
-    pub extensions: Option<Vec<String>>
+    pub extensions: Option<Vec<String>>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct FileFilter {
     pub filter_type: String,
-    pub traits: FilterTraits
+    pub traits: FilterTraits,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct TriggerTraits {
     pub time: Option<Vec<String>>,
-    pub event: Option<String>
+    pub event: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct Trigger {
     pub trigger_type: String,
-    pub traits: TriggerTraits
+    pub traits: TriggerTraits,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct JobInfo {
     pub job_name: String,
     pub uuid: String,
@@ -43,12 +43,11 @@ pub(crate) struct JobInfo {
     pub portable: bool,
     pub file_filters: Vec<FileFilter>,
     pub triggers: Vec<Trigger>,
-    pub version: u32
+    pub version: u32,
 }
 
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct DriveInfoFile {
     pub uuid: String,
-    pub jobs: Vec<JobInfo>
+    pub jobs: Vec<JobInfo>,
 }

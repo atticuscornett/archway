@@ -1,10 +1,12 @@
-mod structs;
 mod drive_manager;
+mod structs;
+mod storage_manager;
 
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use sysinfo::Disks;
 use std::path::Path;
+use sysinfo::Disks;
+use tauri::AppHandle;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -46,7 +48,6 @@ fn get_root_drive(path: &str) -> Option<String> {
     None
 }
 
-
 #[tauri::command]
 fn setup_job(job_info: String) -> bool {
     let mut new_job: structs::JobInfo = match get_job_from_string(&job_info) {
@@ -54,7 +55,7 @@ fn setup_job(job_info: String) -> bool {
         Err(err) => {
             println!("{}", err);
             return false;
-        },
+        }
     };
 
     // Assign job to drive
@@ -65,7 +66,7 @@ fn setup_job(job_info: String) -> bool {
             None => {
                 println!("Failed to determine root drive for output directory.");
                 return false;
-            },
+            }
         };
         println!("Root drive is {}", root_drive);
 
@@ -81,13 +82,40 @@ fn setup_job(job_info: String) -> bool {
         new_job.output_device = drive_uuid.clone();
     }
 
+    if new_job.portable {
+        let root_drive = match get_root_drive(&new_job.output_dir) {
+            Some(drive) => drive,
+            None => {
+                println!("Failed to determine root drive for output directory.");
+                return false;
+            }
+        };
+        drive_manager::add_job_to_drive(&root_drive, new_job.clone());
+    }
+
     let job_json = match serde_json::to_string(&new_job) {
         Ok(json) => json,
         Err(err) => {
             println!("{}", err);
             return false;
-        },
+        }
     };
+
+    let mut all_jobs = storage_manager::get_all_jobs();
+    let job_uuid = new_job.uuid.clone();
+    // Check if job with the same UUID already exists
+    if let Some(existing_job) = all_jobs.iter_mut().find(|job| job.uuid == job_uuid) {
+        // Update existing job
+        *existing_job = new_job.clone();
+    } else {
+        // Add new job
+        all_jobs.push(new_job.clone());
+    }
+    
+    if !storage_manager::set_all_jobs(all_jobs) {
+        println!("Failed to save jobs to storage.");
+        return false;
+    }
 
     println!("{}", new_job.job_name);
     println!("{}", job_json);
@@ -97,6 +125,7 @@ fn setup_job(job_info: String) -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
