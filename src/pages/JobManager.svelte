@@ -1,0 +1,54 @@
+<script lang="ts">
+    import {toast} from "svelte-sonner";
+
+    let { page = $bindable() } = $props();
+    import { onMount } from "svelte";
+    import * as Card from "$lib/components/ui/card/index.js";
+    import {Button} from "$lib/components/ui/button";
+    import {Plus, Home, Pencil, Play, Trash2} from "@lucide/svelte";
+
+    let jobList: Object[] = $state([]);
+
+    let loadJobs = async () => {
+        try {
+            jobList = JSON.parse(await invoke("get_all_jobs")).slice(-3);
+        } catch (error) {
+            toast.error("Something went wrong while loading jobs.");
+        }
+    };
+
+    onMount(()=>{
+        loadJobs();
+    })
+</script>
+
+<h2 class="mb-5">Job Manager</h2>
+<div class="fixed top-10 right-10">
+    <Button onclick={() => page = "SetUpAutomation"}><Plus/> Create New Job</Button>
+    <Button onclick={() => page = "Dashboard"}><Home/> Back to Dashboard</Button>
+</div>
+{#if jobList.length === 0}
+    <p>No jobs found. Create a new job to get started.</p>
+{:else}
+    <div class="job-list">
+        {#each jobList as job}
+            <Card.Root class="relative">
+                <Card.Header>
+                    <Card.Title>{job["job_name"]}</Card.Title>
+                    <Card.Description>Job UUID: {job["uuid"]}</Card.Description>
+                </Card.Header>
+                <Card.Content>
+                    <p>Input Directories: {job["input_dirs"].join(", ")}</p>
+                    <p>Output Directory: {job["output_dir"]}</p>
+                </Card.Content>
+                <div class="absolute top-4 right-4">
+                    <Button class="mb-2"><Play/> Start Job</Button>
+                    <br>
+                    <Button class="mb-2"><Pencil/> Edit Job</Button>
+                    <br>
+                    <Button class="mb-2" variant="destructive"><Trash2/> Delete Job</Button>
+                </div>
+            </Card.Root>
+        {/each}
+    </div>
+{/if}

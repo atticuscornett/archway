@@ -6,7 +6,7 @@ use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use std::path::Path;
 use sysinfo::Disks;
-use tauri::AppHandle;
+use tauri::{command, AppHandle};
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -32,6 +32,15 @@ fn get_drives() -> Vec<Vec<String>> {
 #[tauri::command]
 fn get_documents() -> String {
     return dirs::document_dir().unwrap().to_string_lossy().to_string();
+}
+
+#[tauri::command]
+fn get_all_jobs() -> String {
+    let all_jobs = storage_manager::get_all_jobs();
+    serde_json::to_string(&all_jobs).unwrap_or_else(|err| {
+        println!("Error serializing jobs to JSON: {}", err);
+        String::new()
+    })
 }
 
 fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::Error> {
@@ -132,6 +141,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![get_drives])
         .invoke_handler(tauri::generate_handler![get_documents])
         .invoke_handler(tauri::generate_handler![setup_job])
+        .invoke_handler(tauri::generate_handler![get_all_jobs])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

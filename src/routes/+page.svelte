@@ -4,6 +4,8 @@
     import { toast } from "svelte-sonner";
     import WelcomePage from "../pages/WelcomePage.svelte";
     import SetUpAutomation from "../pages/SetUpAutomation.svelte";
+    import Dashboard from "../pages/Dashboard.svelte";
+    import JobManager from "../pages/JobManager.svelte";
 
     let name = $state("");
     let greetMsg = $state("");
@@ -29,6 +31,12 @@
     {/if}
     {#if page === "SetUpAutomation"}
         <SetUpAutomation bind:page></SetUpAutomation>
+    {/if}
+    {#if page === "Dashboard"}
+        <Dashboard bind:page></Dashboard>
+    {/if}
+    {#if page === "JobManager"}
+        <JobManager bind:page></JobManager>
     {/if}
 
 <!--    <div class="row">-->

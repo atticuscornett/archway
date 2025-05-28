@@ -17,7 +17,7 @@
     <h2>Let's get your first automation set up.</h2>
     <div class="small-margin">
         <Button onclick={()=>{page = "SetUpAutomation"}}>Quick Setup</Button>
-        <Button variant="secondary">No, thanks. I'll set up later.</Button>
+        <Button variant="secondary" onclick={()=>{page = "Dashboard"}}>No, thanks. I'll set up later.</Button>
     </div>
 </div>
 

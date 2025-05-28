@@ -1,7 +1,7 @@
 <script>
     import JobBehavior from "../components/JobSetup/JobBehavior.svelte";
     import {Button} from "$lib/components/ui/button/index.js";
-    import { ChevronLeft, ChevronRight } from '@lucide/svelte';
+    import { ChevronLeft, ChevronRight, Home } from '@lucide/svelte';
     import OutputSelect from "../components/JobSetup/OutputSelect.svelte";
     import InputSelect from "../components/JobSetup/InputSelect.svelte";
     import FileFilters from "../components/JobSetup/FileFilters.svelte";
@@ -68,6 +68,8 @@
 
 {#if step > 0}
     <Button variant="secondary" class="fixed bottom-4 left-4" onclick={prevStep}><ChevronLeft/> Back</Button>
+{:else}
+    <Button variant="secondary" class="fixed bottom-4 left-4" onclick={()=>{page="Dashboard";}}><Home/> Go to Dashboard</Button>
 {/if}
 <Button class="fixed bottom-4 right-4" onclick={nextStep} disabled={!canContinue}>
     {(step === 4) ? "Finish" : "Next" } <ChevronRight/>
