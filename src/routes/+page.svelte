@@ -11,18 +11,14 @@
     let greetMsg = $state("");
     window.invoke = invoke;
     let page = $state("WelcomePage");
+    let pageData = $state("");
 
-    async function greet(event: Event) {
-        event.preventDefault();
-        // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-        greetMsg = await invoke("greet", { name });
-        toast.loading("Goofy..", {
-            id: "loading",
-        });
-        setTimeout(() => {
-            toast.loading("Goofy ahh");
-        }, 10000)
-    }
+    $effect(()=>{
+        if (page.startsWith("SetUpAutomation:")) {
+            pageData = page.replace("SetUpAutomation:", "");
+            page = "SetUpAutomation";
+        }
+    })
 </script>
 
 <main >
@@ -30,7 +26,7 @@
         <WelcomePage bind:page></WelcomePage>
     {/if}
     {#if page === "SetUpAutomation"}
-        <SetUpAutomation bind:page></SetUpAutomation>
+        <SetUpAutomation bind:page bind:pageData></SetUpAutomation>
     {/if}
     {#if page === "Dashboard"}
         <Dashboard bind:page></Dashboard>

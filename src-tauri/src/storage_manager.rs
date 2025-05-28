@@ -45,3 +45,8 @@ pub fn get_all_jobs() -> Vec<JobInfo> {
         }
     }
 }
+
+pub fn get_job_by_uuid(uuid: &str) -> JobInfo {
+    let all_jobs = get_all_jobs();
+    all_jobs.into_iter().find(|job| job.uuid == uuid).expect("Job not found")
+}

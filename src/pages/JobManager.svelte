@@ -38,13 +38,13 @@
                     <Card.Description>Job UUID: {job["uuid"]}</Card.Description>
                 </Card.Header>
                 <Card.Content>
-                    <p>Input Directories: {job["input_dirs"].join(", ")}</p>
+                    <p>Input Directories: {job["input_dirs"].map((dir: Object)=>dir["path"]).join(",")}</p>
                     <p>Output Directory: {job["output_dir"]}</p>
                 </Card.Content>
                 <div class="absolute top-4 right-4">
                     <Button class="mb-2"><Play/> Start Job</Button>
                     <br>
-                    <Button class="mb-2"><Pencil/> Edit Job</Button>
+                    <Button class="mb-2" onclick={()=>{page="SetUpAutomation:"+job["uuid"]}}><Pencil/> Edit Job</Button>
                     <br>
                     <Button class="mb-2" variant="destructive"><Trash2/> Delete Job</Button>
                 </div>

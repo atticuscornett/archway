@@ -7,8 +7,9 @@
     import FileFilters from "../components/JobSetup/FileFilters.svelte";
     import JobTriggers from "../components/JobSetup/JobTriggers.svelte";
     import {toast} from "svelte-sonner";
+    import {onMount} from "svelte";
 
-    let { page = $bindable() } = $props();
+    let { page = $bindable(), pageData=$bindable() } = $props();
 
     let step = $state(0);
     let canContinue = $state(true);
@@ -48,6 +49,13 @@
     let prevStep = () => {
         step -= 1;
     }
+
+    onMount(async ()=> {
+        if (pageData !== ""){
+            job = JSON.parse(await invoke("get_job_by_uuid", {uuid: pageData}));
+            pageData = "";
+        }
+    });
 </script>
 
 {#if step === 0}

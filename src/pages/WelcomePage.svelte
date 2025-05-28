@@ -3,11 +3,20 @@
     import {Files, FileSliders} from '@lucide/svelte';
     import * as Select from "$lib/components/ui/select/index.js";
     import SetUpAutomation from "./SetUpAutomation.svelte";
+    import {onMount} from "svelte";
 
     let { page = $bindable() } = $props();
 
     let job = $state({
         type: "copy"
+    });
+
+    onMount(async ()=> {
+       let jobs = await invoke("get_all_jobs");
+       jobs = JSON.parse(jobs);
+       if (jobs.length > 0){
+           page = "Dashboard";
+       }
     });
 </script>
 

@@ -41,6 +41,7 @@ pub(crate) struct JobInfo {
     pub output_device: String,
     pub copies: u32,
     pub portable: bool,
+    pub new_folder: bool,
     pub file_filters: Vec<FileFilter>,
     pub triggers: Vec<Trigger>,
     pub version: u32,

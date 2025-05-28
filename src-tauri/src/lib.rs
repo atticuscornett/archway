@@ -43,6 +43,15 @@ fn get_all_jobs() -> String {
     })
 }
 
+#[tauri::command]
+fn get_job_by_uuid(uuid: String) -> String {
+    let job = storage_manager::get_job_by_uuid(&uuid);
+    serde_json::to_string(&job).unwrap_or_else(|err| {
+        println!("Error serializing job to JSON: {}", err);
+        String::new()
+    })
+}
+
 fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::Error> {
     serde_json::from_str(job_info)
 }
@@ -137,11 +146,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
-        .invoke_handler(tauri::generate_handler![get_drives])
-        .invoke_handler(tauri::generate_handler![get_documents])
-        .invoke_handler(tauri::generate_handler![setup_job])
-        .invoke_handler(tauri::generate_handler![get_all_jobs])
+        .invoke_handler(tauri::generate_handler![greet, get_drives, get_documents, setup_job, get_all_jobs, get_job_by_uuid])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

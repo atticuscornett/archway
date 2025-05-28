@@ -28,6 +28,8 @@ newer versions of the program.
 - `copies` (int): When the file_behavior is 'copy', this is the number of backups to keep.
 - `portable` (boolean): Whether the job is portable. If true, the job will be copied to the output device and will be
 imported on other devices.
+- `new_folder` (boolean): Whether to create a new folder in the output directory for the job if the output directory
+  does not exist.
 - `file_filters` (Object array): List of file filters to apply when searching for files to back up/archive.
   - `filter_type` (string): The type of file filter.
     - **Values:**
