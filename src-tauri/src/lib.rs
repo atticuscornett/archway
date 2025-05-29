@@ -52,6 +52,17 @@ fn get_job_by_uuid(uuid: String) -> String {
     })
 }
 
+#[tauri::command]
+fn remove_job_by_uuid(uuid: String) -> bool {
+    if storage_manager::remove_job_by_uuid(&uuid) {
+        println!("Job with UUID {} removed successfully.", uuid);
+        return true;
+    } else {
+        println!("Failed to remove job with UUID {}.", uuid);
+        return false;
+    }
+}
+
 fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::Error> {
     serde_json::from_str(job_info)
 }
@@ -146,7 +157,8 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, get_drives, get_documents, setup_job, get_all_jobs, get_job_by_uuid])
+        .invoke_handler(tauri::generate_handler![greet, get_drives, get_documents, setup_job,
+            get_all_jobs, get_job_by_uuid, remove_job_by_uuid])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

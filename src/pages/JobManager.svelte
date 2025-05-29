@@ -17,6 +17,19 @@
         }
     };
 
+    let deleteJob = async (jobUuid: string) => {
+        try {
+            let deleteSuccess = await invoke("remove_job_by_uuid", {uuid: jobUuid});
+            if (!deleteSuccess) {
+                throw new Error("Failed to delete job");
+            }
+            toast.success("Job deleted successfully.");
+            loadJobs();
+        } catch (error) {
+            toast.error("Failed to delete job. Please try again.");
+        }
+    };
+
     onMount(()=>{
         loadJobs();
     })
@@ -46,7 +59,7 @@
                     <br>
                     <Button class="mb-2" onclick={()=>{page="SetUpAutomation:"+job["uuid"]}}><Pencil/> Edit Job</Button>
                     <br>
-                    <Button class="mb-2" variant="destructive"><Trash2/> Delete Job</Button>
+                    <Button class="mb-2" variant="destructive" onclick={()=>{deleteJob(job["uuid"])}}><Trash2/> Delete Job</Button>
                 </div>
             </Card.Root>
         {/each}

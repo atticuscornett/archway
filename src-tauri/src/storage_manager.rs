@@ -50,3 +50,14 @@ pub fn get_job_by_uuid(uuid: &str) -> JobInfo {
     let all_jobs = get_all_jobs();
     all_jobs.into_iter().find(|job| job.uuid == uuid).expect("Job not found")
 }
+
+pub fn remove_job_by_uuid(uuid: &str) -> bool {
+    let mut all_jobs = get_all_jobs();
+    if let Some(pos) = all_jobs.iter().position(|job| job.uuid == uuid) {
+        all_jobs.remove(pos);
+        set_all_jobs(all_jobs)
+    } else {
+        println!("Job with UUID {} not found", uuid);
+        false
+    }
+}
