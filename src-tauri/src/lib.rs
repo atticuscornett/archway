@@ -1,6 +1,7 @@
 mod drive_manager;
 mod structs;
 mod storage_manager;
+mod job_manager;
 
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -75,6 +76,26 @@ fn get_root_drive(path: &str) -> Option<String> {
         }
     }
     None
+}
+
+#[tauri::command]
+fn start_job(uuid: String) -> bool {
+    if job_manager::start_job(uuid) {
+        println!("Job started successfully.");
+        return true;
+    } else {
+        println!("Failed to start job.");
+        return false;
+    }
+}
+
+#[tauri::command]
+fn get_all_job_statuses() -> String {
+    let statuses = job_manager::get_all_job_statuses();
+    serde_json::to_string(&statuses).unwrap_or_else(|err| {
+        println!("Error serializing job statuses to JSON: {}", err);
+        String::new()
+    })
 }
 
 #[tauri::command]
@@ -158,7 +179,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet, get_drives, get_documents, setup_job,
-            get_all_jobs, get_job_by_uuid, remove_job_by_uuid])
+            get_all_jobs, get_job_by_uuid, remove_job_by_uuid, get_all_job_statuses, start_job])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

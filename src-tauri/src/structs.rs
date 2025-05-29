@@ -52,3 +52,14 @@ pub(crate) struct DriveInfoFile {
     pub uuid: String,
     pub jobs: Vec<JobInfo>,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub(crate) struct JobStatus {
+    pub job: JobInfo,
+    pub step: u32,
+    pub total_steps: u32,
+    pub step_title: String,
+    pub last_action: String,
+    pub success: bool,
+    pub percent: f32
+}
