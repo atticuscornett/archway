@@ -47,3 +47,4 @@ pub fn start_job(uuid: String) -> bool {
 pub fn get_all_job_statuses() -> Vec<JobStatus> {
     JOB_STATUSES.lock().unwrap().clone()
 }
+

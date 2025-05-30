@@ -25,5 +25,5 @@
             {/if}
         </h4>
     </Card.Content>
-    <Button class="align-middle absolute bottom-4 right-4"><ArrowRight/></Button>
+    <Button class="align-middle absolute bottom-4 right-4" onclick={()=>{page = "Status";}}><ArrowRight/></Button>
 </Card.Root>

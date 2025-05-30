@@ -6,6 +6,7 @@
     import SetUpAutomation from "../pages/SetUpAutomation.svelte";
     import Dashboard from "../pages/Dashboard.svelte";
     import JobManager from "../pages/JobManager.svelte";
+    import Status from "../pages/Status.svelte";
 
     let name = $state("");
     let greetMsg = $state("");
@@ -33,6 +34,9 @@
     {/if}
     {#if page === "JobManager"}
         <JobManager bind:page></JobManager>
+    {/if}
+    {#if page === "Status"}
+        <Status bind:page></Status>
     {/if}
 
 <!--    <div class="row">-->
