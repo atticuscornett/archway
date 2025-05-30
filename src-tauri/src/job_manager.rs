@@ -29,7 +29,7 @@ pub fn start_job(uuid: String) -> bool {
     let new_job_status = JobStatus {
         job: new_job.clone(),
         step: 0,
-        total_steps: 4,
+        total_steps: if new_job.clone().file_behavior == "copy" { 3 } else { 4 }, // If copying, skip the deletion step
         step_title: String::from("Initializing Job"),
         last_action: String::from("Starting job..."),
         success: true,
@@ -143,14 +143,14 @@ async fn job_stage_one(uuid: String) {
             let mut allowed_extensions = filter.traits.extensions.unwrap();
             for extension in allowed_extensions.clone() {
                 if (extension == "documents:special"){
-                    allowed_extensions.extend(vec![String::from("doc"), String::from("docx"), 
+                    allowed_extensions.extend(vec![String::from("doc"), String::from("docx"),
                     String::from("pdf"), String::from("txt"), String::from("odt"), String::from("rtf"),
                         String::from("md"), String::from("epub"), String::from("pptx"), String::from("xls"), String::from("xlsx")]);
-                    
+
                     println!("Allowed extensions: {:?}", allowed_extensions);
                 }
             }
-            
+
             all_files.retain(|file| {
                 let file_extension = file.split('.').last().unwrap_or("");
                 allowed_extensions.contains(&file_extension.to_lowercase())
