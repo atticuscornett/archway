@@ -103,6 +103,29 @@ async fn job_stage_one(uuid: String) {
     let input_dirs = storage_manager::get_job_by_uuid(&uuid).input_dirs;
     let mut all_folders: Vec<String> = Vec::new();
     for input_dir in input_dirs {
+        if (input_dir.path_type == "library") {
+            if (input_dir.path == "documents") {
+                let documents_path = dirs::document_dir().unwrap();
+                all_folders.push(documents_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "downloads") {
+                let downloads_path = dirs::download_dir().unwrap();
+                all_folders.push(downloads_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "desktop") {
+                let desktop_path = dirs::desktop_dir().unwrap();
+                all_folders.push(desktop_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "music") {
+                let music_path = dirs::audio_dir().unwrap();
+                all_folders.push(music_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "pictures") {
+                let pictures_path = dirs::picture_dir().unwrap();
+                all_folders.push(pictures_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "videos") {
+                let videos_path = dirs::video_dir().unwrap();
+                all_folders.push(videos_path.to_string_lossy().to_string());
+            } else {
+                println!("Unknown library path: {}", input_dir.path);
+            }
+        }
         all_folders.push(input_dir.path.clone());
         all_folders.extend(get_all_subfolders(&input_dir.path));
     }
