@@ -9,6 +9,27 @@
 
     let jobsInProgress: number = $state(0);
 
+    let statusList: Object[] = $state([]);
+
+    let loadJobs = async () => {
+        if (page === "Dashboard") {
+            try {
+                statusList = JSON.parse(await invoke("get_all_job_statuses"));
+                jobsInProgress = statusList.filter(job => (job["completed"] === false)).length;
+                console.log(jobsInProgress);
+            }
+            catch (e){
+                toast.error("Failed to load job statuses.");
+            }
+            setTimeout(loadJobs, 5000); // Refresh every 5 seconds
+        }
+    }
+
+
+
+    onMount(()=>{
+        loadJobs();
+    });
 </script>
 
 <Card.Root class="w-full h-full mb-4 relative pb-8">
