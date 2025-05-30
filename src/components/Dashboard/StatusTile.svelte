@@ -13,7 +13,7 @@
 
 <Card.Root class="w-full h-full mb-4 relative pb-8">
     <Card.Header>
-        <Card.Title>Progress</Card.Title>
+        <Card.Title>Status</Card.Title>
         <Card.Description>View progress of currently running jobs</Card.Description>
     </Card.Header>
     <Card.Content>

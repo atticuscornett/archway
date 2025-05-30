@@ -30,6 +30,18 @@
         }
     };
 
+    let startJob = async (jobUuid: string) => {
+        try {
+            let startSuccess = await invoke("start_job", {uuid: jobUuid});
+            if (!startSuccess) {
+                throw new Error("Failed to start job");
+            }
+            toast.success("Job started successfully.");
+        } catch (error) {
+            toast.error("Job already started or failed to start. Please check the job status.");
+        }
+    };
+
     onMount(()=>{
         loadJobs();
     })
@@ -55,7 +67,7 @@
                     <p>Output Directory: {job["output_dir"]}</p>
                 </Card.Content>
                 <div class="absolute top-4 right-4">
-                    <Button class="mb-2"><Play/> Start Job</Button>
+                    <Button class="mb-2" onclick={()=>{startJob(job["uuid"])}}><Play/> Start Job</Button>
                     <br>
                     <Button class="mb-2" onclick={()=>{page="SetUpAutomation:"+job["uuid"]}}><Pencil/> Edit Job</Button>
                     <br>
