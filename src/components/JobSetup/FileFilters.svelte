@@ -87,7 +87,7 @@
                 fullFilterList.push("archives:special");
             }
 
-            fullFilterList.concat(typeFilterList);
+            fullFilterList = fullFilterList.concat(typeFilterList);
 
             job["file_filters"].push({
                 "filter_type": "extension",
