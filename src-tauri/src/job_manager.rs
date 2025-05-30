@@ -136,6 +136,29 @@ async fn job_stage_one(uuid: String) {
         all_files.extend(get_all_files(input_dir.as_str()));
     }
 
+    update_last_action(uuid.as_str(), String::from("Applying filters..."));
+    let filters = storage_manager::get_job_by_uuid(&uuid).file_filters;
+    for filter in filters {
+        if filter.filter_type == "extension" {
+            let mut allowed_extensions = filter.traits.extensions.unwrap();
+            for extension in allowed_extensions.clone() {
+                if (extension == "documents:special"){
+                    allowed_extensions.extend(vec![String::from("doc"), String::from("docx"), 
+                    String::from("pdf"), String::from("txt"), String::from("odt"), String::from("rtf"),
+                        String::from("md"), String::from("epub"), String::from("pptx"), String::from("xls"), String::from("xlsx")]);
+                    
+                    println!("Allowed extensions: {:?}", allowed_extensions);
+                }
+            }
+            
+            all_files.retain(|file| {
+                let file_extension = file.split('.').last().unwrap_or("");
+                allowed_extensions.contains(&file_extension.to_lowercase())
+            });
+        }
+    }
+
+
     println!("All folders to move: {:?}", all_folders);
     println!("All files to move: {:?}", all_files);
 
