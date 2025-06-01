@@ -40,7 +40,7 @@
 {:else}
     <div class="job-list">
         {#each statusList as status}
-            <Card.Root class="relative">
+            <Card.Root class="relative mb-4">
                 <div class={status ? "" : "text-red-600"}>
                     <Card.Header>
                         <Card.Title>{status["job"]["job_name"]}</Card.Title>

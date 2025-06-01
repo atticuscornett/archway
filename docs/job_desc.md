@@ -34,7 +34,7 @@ imported on other devices.
   - `filter_type` (string): The type of file filter.
     - **Values:**
       - `'extension'` (string): A file extension filter.
-      - `'lastused'` (string): A regular expression filter.
+      - `'last-used'` (string): A regular expression filter.
       - `'size'` (string): A file size filter.
     - `traits` (Object):
         - `size` (int): The size of the file in megabytes.

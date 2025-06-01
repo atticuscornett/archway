@@ -2,6 +2,8 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use crate::storage_manager;
 use crate::structs::{JobInfo, JobStatus};
+use std::fs;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
@@ -96,6 +98,37 @@ fn get_all_files(path: &str) -> Vec<String> {
     files
 }
 
+fn get_last_access_time(path: &str) -> std::io::Result<u64> {
+    let metadata = fs::metadata(path)?;
+    let atime = metadata.accessed()?;
+    let duration = atime.duration_since(UNIX_EPOCH).unwrap();
+    Ok(duration.as_secs())
+}
+
+fn check_older_than(time: u64, period: &str) -> bool{
+    let now = SystemTime::now();
+    let period_duration = match period {
+        "week" => 7 * 24 * 60 * 60, // 1 week in seconds
+        "2weeks" => 14 * 24 * 60 * 60, // 2 weeks in seconds
+        "month" => 30 * 24 * 60 * 60, // 1 month in seconds
+        "2months" => 60 * 24 * 60 * 60, // 2 months in seconds
+        "3months" => 90 * 24 * 60 * 60, // 3 months in seconds
+        "6months" => 180 * 24 * 60 * 60, // 6 months in seconds
+        "year" => 365 * 24 * 60 * 60, // 1 year in seconds
+        _ => 999999999999999, // Invalid period
+    };
+    
+    if let Ok(duration) = now.duration_since(UNIX_EPOCH) {
+        if duration.as_secs() > time + period_duration {
+            true
+        } else {
+            false
+        }
+    } else {
+        false
+    }
+}
+
 async fn job_stage_one(uuid: String) {
     update_job_status(uuid.as_str(), 1, String::from("Indexing Files"),
                       String::from("Getting all input folders..."), true, false, -1.0);
@@ -146,14 +179,30 @@ async fn job_stage_one(uuid: String) {
                     allowed_extensions.extend(vec![String::from("doc"), String::from("docx"),
                     String::from("pdf"), String::from("txt"), String::from("odt"), String::from("rtf"),
                         String::from("md"), String::from("epub"), String::from("pptx"), String::from("xls"), String::from("xlsx")]);
-
-                    println!("Allowed extensions: {:?}", allowed_extensions);
                 }
+
             }
 
             all_files.retain(|file| {
                 let file_extension = file.split('.').last().unwrap_or("");
                 allowed_extensions.contains(&file_extension.to_lowercase())
+            });
+        }
+        if (filter.filter_type == "size") {
+            
+        }
+        if (filter.filter_type == "last-used") {
+            let threshold = filter.traits.lastused.unwrap();
+            all_files.retain(|file| {
+                match get_last_access_time(file.as_str()) {
+                    Ok(last_accessed) => {
+                        check_older_than(last_accessed, threshold.as_str())
+                    }
+                    Err(_) => { 
+                        println!("Could not get last accessed time for file: {}", file);
+                        false
+                    }, // If we can't get the last accessed time, exclude the file
+                }
             });
         }
     }
