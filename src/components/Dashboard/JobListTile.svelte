@@ -29,8 +29,11 @@
         <Card.Description>Create, run, and edit jobs</Card.Description>
     </Card.Header>
     <Card.Content>
+        <h4>Latest Jobs</h4>
+        {#if jobList.length === 0}
+            <p>No jobs found. Create a new job to get started.</p>
+        {/if}
         {#each jobList as job}
-            <h4>Latest Jobs</h4>
             <h6>{job["job_name"]}</h6>
         {/each}
     </Card.Content>

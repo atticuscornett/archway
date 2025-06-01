@@ -57,7 +57,7 @@
 {:else}
     <div class="job-list">
         {#each jobList as job}
-            <Card.Root class="relative">
+            <Card.Root class="relative mb-4">
                 <Card.Header>
                     <Card.Title>{job["job_name"]}</Card.Title>
                     <Card.Description>Job UUID: {job["uuid"]}</Card.Description>
