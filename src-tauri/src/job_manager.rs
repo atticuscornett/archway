@@ -5,6 +5,10 @@ use crate::structs::{JobInfo, JobStatus};
 use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
+use sha2::{Sha256, Digest};
+use std::fs::File;
+use std::io::{BufReader, Read};
+use std::io;
 
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
@@ -158,6 +162,19 @@ fn check_older_than(time: u64, period: &str) -> bool{
 fn get_file_size(path: &str) -> std::io::Result<u64> {
     let metadata = fs::metadata(path)?;
     Ok(metadata.len())
+}
+
+fn file_hash(path: &str) -> std::io::Result<Vec<u8>> {
+    let mut file = fs::File::open(&path)?;
+    let mut hasher = Sha256::new();
+    let n = io::copy(&mut file, &mut hasher)?;
+    Ok(hasher.finalize().to_vec())
+}
+
+fn compare_files(file1: &str, file2: &str) -> std::io::Result<bool> {
+    let hash1 = file_hash(file1)?;
+    let hash2 = file_hash(file2)?;
+    Ok(hash1 == hash2)
 }
 
 async fn job_stage_one(uuid: String) {
@@ -375,6 +392,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
 
 async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) {
     let total_files = files.len() as u32;
+    let mut output_paths: Vec<String> = Vec::new();
     let mut processed_files = 0;
 
     update_job_status(uuid.as_str(), 3, String::from("Copying Files"),
@@ -416,7 +434,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
     }
 
 
-    for file in files {
+    for file in &files {
         let file_path = PathBuf::from(&file);
         let mut file_path_str = file_path.to_string_lossy().to_string();
         update_last_action(uuid.as_str(), format!("Copying file: {} ({}/{})", file_path_str, processed_files + 1, total_files));
@@ -449,6 +467,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
         // Ensure the output directory exists
         let output_file_full_path = output_dir.join(&file_path_str);
         println!("Output file full path: {}", output_file_full_path.display());
+        output_paths.push(output_file_full_path.to_string_lossy().to_string());
         let output_file_parent = output_file_full_path.parent();
         if !output_file_parent.as_ref().unwrap().exists() {
             match std::fs::create_dir_all(output_file_parent.as_ref().unwrap()) {
@@ -478,5 +497,63 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                 return;
             }
         }
+    }
+    tauri::async_runtime::spawn(job_stage_four(uuid, files, output_paths, output_dir));
+}
+
+async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec<String>, output_dir: PathBuf) {
+    update_job_status(uuid.as_str(), 4, String::from("Verifying Files"),
+                      String::from("Verifying copied files..."), true, false, 0.0);
+
+    if (input_files.len() != output_files.len()) {
+        println!("Input and output file counts do not match: {} != {}", input_files.len(), output_files.len());
+        update_job_status(uuid.as_str(), 4, String::from("Job failed."),
+                          String::from("Input and output file counts do not match."), false, true, 0.0);
+        return;
+    }
+
+    let mut verified_files = 0;
+    let total_files = input_files.len() as u32;
+    let mut failed_files: Vec<String> = Vec::new();
+
+    for (input_file, output_file) in input_files.iter().zip(output_files.iter()) {
+        update_last_action(uuid.as_str(), format!("Verifying file: {} ({}/{})", output_file, verified_files, total_files));
+        let input_file_path = PathBuf::from(input_file);
+        let output_file_path = PathBuf::from(output_file);
+
+        if !output_file_path.exists() {
+            println!("Output file does not exist: {}", output_file);
+            failed_files.push(output_file.clone());
+            continue;
+        }
+
+        match compare_files(input_file_path.to_str().unwrap(), output_file_path.to_str().unwrap()) {
+            Ok(true) => {
+                verified_files += 1;
+                let percent = (verified_files as f32 / total_files as f32);
+                update_job_progress(uuid.as_str(), percent);
+                update_last_action(uuid.as_str(), format!("Verified file: {} ({}/{})", output_file, verified_files, total_files));
+            }
+            Ok(false) => {
+                println!("File verification failed for: {}", output_file);
+                failed_files.push(output_file.clone());
+            }
+            Err(e) => {
+                println!("Error comparing files: {}", e);
+                failed_files.push(output_file.clone());
+            }
+        }
+    }
+
+    if (failed_files.is_empty()) {
+        println!("All files verified successfully.");
+        update_job_status(uuid.as_str(), 4, String::from("Job completed."),
+                          String::from("All files verified successfully."), true, true, 1.0);
+    } else {
+        // Recopy failed files
+        println!("Some files failed verification: {:?}", failed_files);
+
+        update_job_status(uuid.as_str(), 4, String::from("Job failed."),
+                          format!("Some files failed verification: {:?}", failed_files), false, true, 0.0);
     }
 }

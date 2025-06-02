@@ -38,11 +38,13 @@ declare module '$env/static/private' {
 	export const DriverData: string;
 	export const EDITOR: string;
 	export const EnableLog: string;
+	export const FIG_TERM: string;
 	export const HOME: string;
 	export const HOMEDRIVE: string;
 	export const HOMEPATH: string;
 	export const IGCCSVC_DB: string;
 	export const INIT_CWD: string;
+	export const INTELLIJ_TERMINAL_COMMAND_BLOCKS_REWORKED: string;
 	export const JETBRAINS_INTELLIJ_COMMAND_END_MARKER: string;
 	export const LOCALAPPDATA: string;
 	export const LOGONSERVER: string;
@@ -80,6 +82,8 @@ declare module '$env/static/private' {
 	export const PROCESSOR_IDENTIFIER: string;
 	export const PROCESSOR_LEVEL: string;
 	export const PROCESSOR_REVISION: string;
+	export const PROCESS_LAUNCHED_BY_CW: string;
+	export const PROCESS_LAUNCHED_BY_Q: string;
 	export const ProgramData: string;
 	export const ProgramFiles: string;
 	export const ProgramW6432: string;
@@ -150,11 +154,13 @@ declare module '$env/dynamic/private' {
 		DriverData: string;
 		EDITOR: string;
 		EnableLog: string;
+		FIG_TERM: string;
 		HOME: string;
 		HOMEDRIVE: string;
 		HOMEPATH: string;
 		IGCCSVC_DB: string;
 		INIT_CWD: string;
+		INTELLIJ_TERMINAL_COMMAND_BLOCKS_REWORKED: string;
 		JETBRAINS_INTELLIJ_COMMAND_END_MARKER: string;
 		LOCALAPPDATA: string;
 		LOGONSERVER: string;
@@ -192,6 +198,8 @@ declare module '$env/dynamic/private' {
 		PROCESSOR_IDENTIFIER: string;
 		PROCESSOR_LEVEL: string;
 		PROCESSOR_REVISION: string;
+		PROCESS_LAUNCHED_BY_CW: string;
+		PROCESS_LAUNCHED_BY_Q: string;
 		ProgramData: string;
 		ProgramFiles: string;
 		ProgramW6432: string;
