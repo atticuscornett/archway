@@ -59,7 +59,7 @@
                     <Card.Content>
                         {#if status["completed"]}
                             {#if status["success"]}
-                                <CircleCheck class="absolute top-4 right-4"/>
+                                <CircleCheck class="absolute top-4 right-4 text-green-400"/>
                                 <h3>Job complete.</h3>
                             {:else}
                                 <CircleX class="absolute top-4 right-4"/>
