@@ -349,13 +349,14 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         }
 
         if folder_num > copies {
+            println!("Output directory already exists: {}", output_dir_path.display());
             // Rename all folders and then delete oldest
             folder_num = 1;
             while output_dir_path.exists() && folder_num <= copies {
                 output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, folder_num)).to_string_lossy().to_string();
                 let output_dir_mod = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, folder_num - 1));
 
-                fs::rename(&output_dir_mod, &output_dir).unwrap_or_else(|_| {
+                fs::rename(&output_dir, &output_dir_mod).unwrap_or_else(|_| {
                     println!("Failed to rename output directory: {}", output_dir_mod.display());
                 });
                 folder_num += 1;
@@ -368,6 +369,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                     println!("Failed to delete oldest folder: {}", oldest_folder.display());
                 });
             }
+
 
             // Ensure set to correct output directory
             output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, copies)).to_string_lossy().to_string();
