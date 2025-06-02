@@ -249,19 +249,27 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
     let output_device = job_info.output_device.clone();
 
     let output_dir = job_info.output_dir.clone();
+    let drive = drive_manager::get_root_drive(output_dir.as_str()).unwrap();
+    let drive_uuid = drive_manager::get_drive_uuid(drive.as_str());
+
+    if !std::path::Path::new(&drive).exists() {
+        println!("Drive does not exist: {}", drive);
+        update_job_status(uuid.as_str(), 2, String::from("Job failed."),
+                          String::from("Drive does not exist."), false, true, 0.0);
+        return;
+    }
+
 
     if (output_device != "special:any"){
-        let drive = drive_manager::get_root_drive(output_dir.as_str()).unwrap();
-        let drive_uuid = drive_manager::get_drive_uuid(drive.as_str());
         if (drive_uuid.is_empty()) {
             println!("Failed to get or create drive UUID.");
-            update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+            update_job_status(uuid.as_str(), 2, String::from("Job failed."),
                               String::from("Failed to get or create drive UUID."), false, true, 0.0);
             return;
         }
         if (drive_uuid != output_device) {
             println!("Drive UUID does not match job output device: {} != {}", drive_uuid, output_device);
-            update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+            update_job_status(uuid.as_str(), 2, String::from("Job failed."),
                               String::from("Drive UUID does not match job output device."), false, true, 0.0);
             return;
         }
@@ -274,7 +282,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                 Ok(_) => println!("Created output directory: {}", output_dir),
                 Err(e) => {
                     println!("Failed to create output directory: {}", e);
-                    update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+                    update_job_status(uuid.as_str(), 2, String::from("Job failed."),
                                       String::from("Failed to create output directory."), false, true, 0.0);
                     return;
                 }
@@ -282,7 +290,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         }
         else {
             println!("Output directory does not exist and new_folder is false: {}", output_dir);
-            update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+            update_job_status(uuid.as_str(), 2, String::from("Job failed."),
                               String::from("Output directory does not exist."), false, true, 0.0);
             return;
         }
