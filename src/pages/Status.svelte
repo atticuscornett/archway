@@ -50,7 +50,7 @@
                         <h3>Step {status["step"]} of {status["total_steps"]}: {status["step_title"]}...</h3>
                         <h4 class="mb-2">{status["last_action"]}</h4>
 
-                        <Progress value={status["percent"]}></Progress>
+                        <Progress value={status["percent"]*100}></Progress>
                     </Card.Content>
                     <div class="absolute top-4 right-4">
     <!--                    <Button class="mb-2"><Play/> Start Job</Button>-->

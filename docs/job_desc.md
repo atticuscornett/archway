@@ -24,7 +24,7 @@ newer versions of the program.
         - Supported libraries: 'photos', 'videos', 'documents', 'music', 'downloads', 'desktop'.
       - For custom directories, the path is absolute.
 - `output_dir` (string): The directory where the files will be copied/moved to.
-- `output_device` (string): The name of the device where the files will be copied/moved to. If blank, will move to any device that matches the output_dir.
+- `output_device` (string): The name of the device where the files will be copied/moved to. If special:any, will move to any device that matches the output_dir.
 - `copies` (int): When the file_behavior is 'copy', this is the number of backups to keep.
 - `portable` (boolean): Whether the job is portable. If true, the job will be copied to the output device and will be
 imported on other devices.

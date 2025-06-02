@@ -90,3 +90,13 @@ pub fn add_job_to_drive(drive_name: &str, job_info: JobInfo) -> bool {
         }
     }
 }
+
+pub fn get_root_drive(path: &str) -> Option<String> {
+    let path = Path::new(path);
+    if let Some(component) = path.components().next() {
+        if let std::path::Component::Prefix(prefix_component) = component {
+            return Some(prefix_component.as_os_str().to_string_lossy().to_string());
+        }
+    }
+    None
+}

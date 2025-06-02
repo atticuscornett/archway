@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
-use crate::storage_manager;
+use crate::{drive_manager, get_root_drive, storage_manager};
 use crate::structs::{JobInfo, JobStatus};
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -67,6 +67,13 @@ fn update_last_action(uuid: &str, last_action: String) {
     let mut job_statuses = JOB_STATUSES.lock().unwrap();
     if let Some(job_status) = job_statuses.iter_mut().find(|js| js.job.uuid == uuid) {
         job_status.last_action = last_action;
+    }
+}
+
+fn update_job_progress(uuid: &str, percent: f32) {
+    let mut job_statuses = JOB_STATUSES.lock().unwrap();
+    if let Some(job_status) = job_statuses.iter_mut().find(|js| js.job.uuid == uuid) {
+        job_status.percent = percent;
     }
 }
 
@@ -169,12 +176,14 @@ async fn job_stage_one(uuid: String) {
     }
 
     update_last_action(uuid.as_str(), String::from("Getting all files..."));
+    update_job_progress(uuid.as_str(), 0.33);
     let mut all_files: Vec<String> = Vec::new();
     for input_dir in all_folders.iter() {
         all_files.extend(get_all_files(input_dir.as_str()));
     }
 
     update_last_action(uuid.as_str(), String::from("Applying filters..."));
+    update_job_progress(uuid.as_str(), 0.66);
     let filters = storage_manager::get_job_by_uuid(&uuid).file_filters;
     for filter in filters {
         if filter.filter_type == "extension" {
@@ -227,6 +236,56 @@ async fn job_stage_one(uuid: String) {
     println!("All folders to move: {:?}", all_folders);
     println!("All files to move: {:?}", all_files);
 
+    tauri::async_runtime::spawn(job_stage_two(uuid, all_files));
 
+}
+
+async fn job_stage_two(uuid: String, files: Vec<String>) {
+    update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+                      String::from("Starting to copy files..."), true, false, -1.0);
+
+    let job_info = storage_manager::get_job_by_uuid(&uuid);
+
+    let output_device = job_info.output_device.clone();
+
+    let output_dir = job_info.output_dir.clone();
+
+    if (output_device != "special:any"){
+        let drive = drive_manager::get_root_drive(output_dir.as_str()).unwrap();
+        let drive_uuid = drive_manager::get_drive_uuid(drive.as_str());
+        if (drive_uuid.is_empty()) {
+            println!("Failed to get or create drive UUID.");
+            update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+                              String::from("Failed to get or create drive UUID."), false, true, 0.0);
+            return;
+        }
+        if (drive_uuid != output_device) {
+            println!("Drive UUID does not match job output device: {} != {}", drive_uuid, output_device);
+            update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+                              String::from("Drive UUID does not match job output device."), false, true, 0.0);
+            return;
+        }
+    }
+
+    // Ensure the output directory exists
+    if !std::path::Path::new(&output_dir).exists() {
+        if (job_info.new_folder.clone()) {
+            match std::fs::create_dir_all(&output_dir) {
+                Ok(_) => println!("Created output directory: {}", output_dir),
+                Err(e) => {
+                    println!("Failed to create output directory: {}", e);
+                    update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+                                      String::from("Failed to create output directory."), false, true, 0.0);
+                    return;
+                }
+            }
+        }
+        else {
+            println!("Output directory does not exist and new_folder is false: {}", output_dir);
+            update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
+                              String::from("Output directory does not exist."), false, true, 0.0);
+            return;
+        }
+    }
 
 }

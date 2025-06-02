@@ -8,6 +8,7 @@ use serde_json;
 use std::path::Path;
 use sysinfo::Disks;
 use tauri::{command, AppHandle};
+use crate::drive_manager::get_root_drive;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -66,16 +67,6 @@ fn remove_job_by_uuid(uuid: String) -> bool {
 
 fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::Error> {
     serde_json::from_str(job_info)
-}
-
-fn get_root_drive(path: &str) -> Option<String> {
-    let path = Path::new(path);
-    if let Some(component) = path.components().next() {
-        if let std::path::Component::Prefix(prefix_component) = component {
-            return Some(prefix_component.as_os_str().to_string_lossy().to_string());
-        }
-    }
-    None
 }
 
 #[tauri::command]
