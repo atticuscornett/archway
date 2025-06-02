@@ -215,7 +215,7 @@
     </Select.Root>
 {/if}
 
-<Switch id="sizeFilter" bind:checked={sizeFilter}></Switch>
+<Switch id="sizeFilter" bind:checked={sizeFilter} onCheckedChange={updateJob}></Switch>
 <Label for="sizeFilter" class="align-text-bottom mt-4 text-lg">Filter by File Size</Label>
 <br>
 
