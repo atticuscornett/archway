@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
-use crate::{drive_manager, get_root_drive, storage_manager};
+use crate::{drive_manager, storage_manager};
 use crate::structs::{JobInfo, JobStatus};
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -18,12 +18,15 @@ Job Steps:
 pub fn start_job(uuid: String) -> bool {
     let already_running = {
         let job_statuses = JOB_STATUSES.lock().unwrap();
-        job_statuses.iter().any(|js| js.job.uuid == uuid)
+        job_statuses.iter().any(|js| js.job.uuid == uuid && !js.completed)
     };
+
     if already_running {
         println!("Job with UUID {} is already running.", uuid);
         return false;
     }
+
+    clear_job(&uuid);
 
 
     let new_job = storage_manager::get_job_by_uuid(&uuid);
@@ -47,6 +50,15 @@ pub fn start_job(uuid: String) -> bool {
 
 }
 
+pub fn clear_job(uuid: &str) -> bool {
+    let mut job_statuses = JOB_STATUSES.lock().unwrap();
+    if let Some(pos) = job_statuses.iter().position(|js| js.job.uuid == uuid) {
+        job_statuses.remove(pos);
+        return true;
+    }
+    false
+}
+
 pub fn get_all_job_statuses() -> Vec<JobStatus> {
     JOB_STATUSES.lock().unwrap().clone()
 }
@@ -68,6 +80,11 @@ fn update_last_action(uuid: &str, last_action: String) {
     if let Some(job_status) = job_statuses.iter_mut().find(|js| js.job.uuid == uuid) {
         job_status.last_action = last_action;
     }
+}
+
+pub fn clear_completed_jobs() {
+    let mut job_statuses = JOB_STATUSES.lock().unwrap();
+    job_statuses.retain(|js| !js.completed);
 }
 
 fn update_job_progress(uuid: &str, percent: f32) {

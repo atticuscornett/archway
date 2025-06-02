@@ -5,7 +5,7 @@
     import { onMount } from "svelte";
     import * as Card from "$lib/components/ui/card/index.js";
     import {Button} from "$lib/components/ui/button";
-    import {Plus, Home, Pencil, Play, Trash2, SquareX} from "@lucide/svelte";
+    import {Plus, Home, Pencil, Play, Trash2, SquareX, CircleX, CircleCheck} from "@lucide/svelte";
     import {Progress} from "$lib/components/ui/progress";
 
     let statusList: Object[] = $state([]);
@@ -22,6 +22,16 @@
         }
     }
 
+    let clearCompletedStatuses = async () => {
+        await invoke("clear_completed_jobs");
+        try {
+            statusList = JSON.parse(await invoke("get_all_job_statuses"));
+        }
+        catch (e){
+            toast.error("Failed to load job statuses.");
+        }
+    };
+
 
 
     onMount(()=>{
@@ -31,7 +41,7 @@
 
 <h2 class="mb-5">Status</h2>
 <div class="fixed top-10 right-10" >
-    <Button><SquareX/> Clear Completed Statuses</Button>
+    <Button onclick={clearCompletedStatuses}><SquareX/> Clear Completed Statuses</Button>
     <Button onclick={() => page = "Dashboard"}><Home/> Back to Dashboard</Button>
 </div>
 
@@ -41,16 +51,27 @@
     <div class="job-list">
         {#each statusList as status}
             <Card.Root class="relative mb-4">
-                <div class={status ? "" : "text-red-600"}>
+                <div class={status["success"] ? "" : "text-red-600"}>
                     <Card.Header>
                         <Card.Title>{status["job"]["job_name"]}</Card.Title>
                         <Card.Description>Job UUID: {status["job"]["uuid"]}</Card.Description>
                     </Card.Header>
                     <Card.Content>
-                        <h3>Step {status["step"]} of {status["total_steps"]}: {status["step_title"]}...</h3>
-                        <h4 class="mb-2">{status["last_action"]}</h4>
+                        {#if status["completed"]}
+                            {#if status["success"]}
+                                <CircleCheck class="absolute top-4 right-4"/>
+                                <h3>Job complete.</h3>
+                            {:else}
+                                <CircleX class="absolute top-4 right-4"/>
+                                <h3>Job failed. </h3>
+                                <h4>{status["last_action"]}</h4>
+                            {/if}
+                        {:else}
+                            <h3>Step {status["step"]} of {status["total_steps"]}: {status["step_title"]}...</h3>
+                            <h4 class="mb-2">{status["last_action"]}</h4>
 
-                        <Progress value={status["percent"]*100}></Progress>
+                            <Progress value={status["percent"]*100}></Progress>
+                        {/if}
                     </Card.Content>
                     <div class="absolute top-4 right-4">
     <!--                    <Button class="mb-2"><Play/> Start Job</Button>-->

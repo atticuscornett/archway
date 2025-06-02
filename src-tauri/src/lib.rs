@@ -32,6 +32,11 @@ fn get_drives() -> Vec<Vec<String>> {
 }
 
 #[tauri::command]
+fn clear_completed_jobs(){
+    job_manager::clear_completed_jobs();
+}
+
+#[tauri::command]
 fn get_documents() -> String {
     return dirs::document_dir().unwrap().to_string_lossy().to_string();
 }
@@ -170,7 +175,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet, get_drives, get_documents, setup_job,
-            get_all_jobs, get_job_by_uuid, remove_job_by_uuid, get_all_job_statuses, start_job])
+            get_all_jobs, get_job_by_uuid, remove_job_by_uuid, get_all_job_statuses, start_job,
+            clear_completed_jobs])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
