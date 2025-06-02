@@ -129,6 +129,11 @@ fn check_older_than(time: u64, period: &str) -> bool{
     }
 }
 
+fn get_file_size(path: &str) -> std::io::Result<u64> {
+    let metadata = fs::metadata(path)?;
+    Ok(metadata.len())
+}
+
 async fn job_stage_one(uuid: String) {
     update_job_status(uuid.as_str(), 1, String::from("Indexing Files"),
                       String::from("Getting all input folders..."), true, false, -1.0);
@@ -189,7 +194,18 @@ async fn job_stage_one(uuid: String) {
             });
         }
         if (filter.filter_type == "size") {
-            
+            let threshold = filter.traits.size.unwrap();
+
+
+            all_files.retain(|file| {
+                match get_file_size(file.as_str()) {
+                    Ok(size) => (size/1000)/1000 >= threshold,
+                    Err(_) => {
+                        println!("Could not get size for file: {}", file);
+                        false
+                    }, // If we can't get the size, exclude the file
+                }
+            });
         }
         if (filter.filter_type == "last-used") {
             let threshold = filter.traits.lastused.unwrap();
