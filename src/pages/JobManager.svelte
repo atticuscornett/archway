@@ -37,6 +37,7 @@
                 throw new Error("Failed to start job");
             }
             toast.success("Job started successfully.");
+            page = "Status"; // Redirect to Status page to view job progress
         } catch (error) {
             toast.error("Job already started or failed to start. Please check the job status.");
         }
