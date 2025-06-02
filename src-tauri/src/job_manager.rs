@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use crate::{drive_manager, storage_manager};
 use crate::structs::{JobInfo, JobStatus};
 use std::fs;
+use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
@@ -10,9 +11,10 @@ static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::
 /*
 Job Steps:
 1. Indexing files to move
-2. Copying files
-3. Verifying files
-4. (If moving) Deleting original files
+2. Initialize directories
+3. Copying files
+4. Verifying files
+5. (If moving) Deleting original files
  */
 
 pub fn start_job(uuid: String) -> bool {
@@ -34,7 +36,7 @@ pub fn start_job(uuid: String) -> bool {
     let new_job_status = JobStatus {
         job: new_job.clone(),
         step: 0,
-        total_steps: if new_job.clone().file_behavior == "copy" { 3 } else { 4 }, // If copying, skip the deletion step
+        total_steps: if new_job.clone().file_behavior == "copy" { 4 } else { 5 }, // If copying, skip the deletion step
         step_title: String::from("Initializing Job"),
         last_action: String::from("Starting job..."),
         success: true,
@@ -211,7 +213,6 @@ async fn job_stage_one(uuid: String) {
                     String::from("pdf"), String::from("txt"), String::from("odt"), String::from("rtf"),
                         String::from("md"), String::from("epub"), String::from("pptx"), String::from("xls"), String::from("xlsx")]);
                 }
-
             }
 
             all_files.retain(|file| {
@@ -258,14 +259,17 @@ async fn job_stage_one(uuid: String) {
 }
 
 async fn job_stage_two(uuid: String, files: Vec<String>) {
-    update_job_status(uuid.as_str(), 2, String::from("Copying Files"),
-                      String::from("Starting to copy files..."), true, false, -1.0);
+    update_job_status(uuid.as_str(), 2, String::from("Initializing Directories"),
+                      String::from("Initializing directories..."), true, false, -1.0);
 
     let job_info = storage_manager::get_job_by_uuid(&uuid);
 
+    let job_type = job_info.file_behavior.clone();
+    let copies = job_info.copies.clone();
+
     let output_device = job_info.output_device.clone();
 
-    let output_dir = job_info.output_dir.clone();
+    let mut output_dir = job_info.output_dir.clone();
     let drive = drive_manager::get_root_drive(output_dir.as_str()).unwrap();
     let drive_uuid = drive_manager::get_drive_uuid(drive.as_str());
 
@@ -313,4 +317,166 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         }
     }
 
+    // Create job directory
+    let mut output_dir_path = std::path::PathBuf::from(&output_dir);
+    output_dir_path = output_dir_path.join(format!("archway-{}", job_info.uuid));
+    output_dir = output_dir_path.to_string_lossy().to_string();
+
+    // Check if the output directory already exists and handle copies
+    if (job_type == "copy" && copies > 1) {
+        let mut folder_num = 1;
+        while output_dir_path.exists() && folder_num <= copies {
+            output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, folder_num)).to_string_lossy().to_string();
+            folder_num += 1;
+            output_dir_path = std::path::PathBuf::from(output_dir.clone().as_str());
+        }
+
+        if folder_num > copies {
+            // Rename all folders and then delete oldest
+            folder_num = 1;
+            while output_dir_path.exists() && folder_num <= copies {
+                output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, folder_num)).to_string_lossy().to_string();
+                let output_dir_mod = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, folder_num - 1));
+
+                fs::rename(&output_dir_mod, &output_dir).unwrap_or_else(|_| {
+                    println!("Failed to rename output directory: {}", output_dir_mod.display());
+                });
+                folder_num += 1;
+            }
+
+            // Delete the oldest folder if it exists
+            let oldest_folder = output_dir_path.with_file_name(format!("archway-{}-0", job_info.uuid));
+            if oldest_folder.exists() {
+                fs::remove_dir_all(&oldest_folder).unwrap_or_else(|_| {
+                    println!("Failed to delete oldest folder: {}", oldest_folder.display());
+                });
+            }
+
+            // Ensure set to correct output directory
+            output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, copies)).to_string_lossy().to_string();
+        }
+    }
+
+    output_dir_path = std::path::PathBuf::from(&output_dir);
+    if !output_dir_path.exists() {
+        match std::fs::create_dir_all(&output_dir) {
+            Ok(_) => println!("Created output directory: {}", output_dir),
+            Err(e) => {
+                println!("Failed to create output directory: {}", e);
+                update_job_status(uuid.as_str(), 2, String::from("Job failed."),
+                                  String::from("Failed to create output directory."), false, true, 0.0);
+                return;
+            }
+        }
+    }
+
+    tauri::async_runtime::spawn(job_stage_three(uuid, files, output_dir_path));
+}
+
+async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) {
+    let total_files = files.len() as u32;
+    let mut processed_files = 0;
+
+    update_job_status(uuid.as_str(), 3, String::from("Copying Files"),
+                      String::from("Starting file copy..."), true, false, 0.0);
+
+    println!("Output directory: {}", output_dir.display());
+
+    let job_info = storage_manager::get_job_by_uuid(&uuid);
+    let mut input_dirs_struct = job_info.input_dirs.clone();
+    let mut input_dirs_cleaned: Vec<String> = Vec::new();
+
+    for input_dir in input_dirs_struct {
+        if (input_dir.path_type == "library") {
+            if (input_dir.path == "documents") {
+                let documents_path = dirs::document_dir().unwrap();
+                input_dirs_cleaned.push(documents_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "downloads") {
+                let downloads_path = dirs::download_dir().unwrap();
+                input_dirs_cleaned.push(downloads_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "desktop") {
+                let desktop_path = dirs::desktop_dir().unwrap();
+                input_dirs_cleaned.push(desktop_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "music") {
+                let music_path = dirs::audio_dir().unwrap();
+                input_dirs_cleaned.push(music_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "pictures") {
+                let pictures_path = dirs::picture_dir().unwrap();
+                input_dirs_cleaned.push(pictures_path.to_string_lossy().to_string());
+            } else if (input_dir.path == "videos") {
+                let videos_path = dirs::video_dir().unwrap();
+                input_dirs_cleaned.push(videos_path.to_string_lossy().to_string());
+            } else {
+                println!("Unknown library path: {}", input_dir.path);
+            }
+        }
+        else {
+            input_dirs_cleaned.push(input_dir.path.clone());
+        }
+    }
+
+
+    for file in files {
+        let file_path = PathBuf::from(&file);
+        let mut file_path_str = file_path.to_string_lossy().to_string();
+        update_last_action(uuid.as_str(), format!("Copying file: {} ({}/{})", file_path_str, processed_files + 1, total_files));
+
+        // Remove the input directory from the file path so the directory structure is preserved
+        let longest_matching_dir = input_dirs_cleaned.iter()
+            .filter(|input_dir| file_path_str.starts_with(*input_dir))
+            .max_by_key(|input_dir| input_dir.len());
+        if let Some(longest_dir) = longest_matching_dir {
+            // Keep the last child directory in the path
+
+            let mut parts: Vec<&str> = Vec::new();
+
+            if longest_dir.contains('\\') {
+                parts = longest_dir.split('\\').collect();
+            } else if longest_dir.contains('/') {
+                parts = longest_dir.split('/').collect();
+            }
+
+            // Get the last part of the path
+            let last_part = parts.pop().unwrap();
+
+            // Remove the longest matching input directory from the file path
+            file_path_str = last_part.to_string() + &file_path_str.replace(longest_dir, "");
+        }
+
+        println!("File path: {}", file_path_str);
+        println!("Output directory: {}", output_dir.display());
+
+        // Ensure the output directory exists
+        let output_file_full_path = output_dir.join(&file_path_str);
+        println!("Output file full path: {}", output_file_full_path.display());
+        let output_file_parent = output_file_full_path.parent();
+        if !output_file_parent.as_ref().unwrap().exists() {
+            match std::fs::create_dir_all(output_file_parent.as_ref().unwrap()) {
+                Ok(_) => println!("Created output directory: {}", output_file_parent.as_ref().unwrap().display()),
+                Err(e) => {
+                    println!("Failed to create output directory: {}", e);
+                    update_job_status(uuid.as_str(), 3, String::from("Job failed."),
+                                      String::from("Failed to create output directory."), false, true, 0.0);
+                    return;
+                }
+            }
+        }
+
+        // Copy the file
+        let output_file = output_dir.join(&file_path_str);
+        match std::fs::copy(&file, &output_file) {
+            Ok(_) => {
+                processed_files += 1;
+                let percent = (processed_files as f32 / total_files as f32);
+                update_job_progress(uuid.as_str(), percent);
+                update_last_action(uuid.as_str(), format!("Copied file: {} ({}/{})", file_path_str, processed_files, total_files));
+            }
+            Err(e) => {
+                println!("Failed to copy file {}: {}", file, e);
+                update_job_status(uuid.as_str(), 3, String::from("Job failed."),
+                                  format!("Failed to copy file: {}", file), false, true, 0.0);
+                return;
+            }
+        }
+    }
 }

@@ -18,7 +18,7 @@
             catch (e){
                 toast.error("Failed to load job statuses.");
             }
-            setTimeout(loadJobs, 5000); // Refresh every 5 seconds
+            setTimeout(loadJobs, 2500); // Refresh every 2.5 seconds
         }
     }
 
