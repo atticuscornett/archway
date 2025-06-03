@@ -40,7 +40,7 @@
 </script>
 
 <h2 class="mb-5">Status</h2>
-<div class="fixed top-10 right-10" >
+<div class="fixed top-10 right-10 z-50" >
     <Button onclick={clearCompletedStatuses}><SquareX/> Clear Completed Statuses</Button>
     <Button onclick={() => page = "Dashboard"}><Home/> Back to Dashboard</Button>
 </div>

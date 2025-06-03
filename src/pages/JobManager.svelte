@@ -49,7 +49,7 @@
 </script>
 
 <h2 class="mb-5">Job Manager</h2>
-<div class="fixed top-10 right-10">
+<div class="fixed top-10 right-10 z-50">
     <Button onclick={() => page = "SetUpAutomation"}><Plus/> Create New Job</Button>
     <Button onclick={() => page = "Dashboard"}><Home/> Back to Dashboard</Button>
 </div>
