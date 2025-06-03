@@ -1,13 +1,16 @@
 use crate::structs::{JobInfo, JobStatus};
 use crate::{drive_manager, storage_manager};
-use once_cell::sync::Lazy;
+use once_cell::sync::{Lazy, OnceCell};
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::io;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::AppHandle;
+use tauri_plugin_notification::NotificationExt;
 
+static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
 /*
@@ -18,6 +21,19 @@ Job Steps:
 4. Verifying files
 5. (If moving) Deleting original files
  */
+
+pub fn set_app_handle(app_handle: AppHandle) {
+    APP_HANDLE.set(Mutex::new(app_handle)).unwrap();
+}
+
+pub fn get_app_handle() -> AppHandle {
+    APP_HANDLE
+        .get()
+        .expect("App handle not set")
+        .lock()
+        .expect("Failed to lock app handle")
+        .clone()
+}
 
 pub fn start_job(uuid: String) -> bool {
     // Check if the job is already running
@@ -56,6 +72,13 @@ pub fn start_job(uuid: String) -> bool {
     JOB_STATUSES.lock().unwrap().push(new_job_status);
 
     tauri::async_runtime::spawn(job_stage_one(uuid));
+
+    get_app_handle().notification()
+        .builder()
+        .title("Job Started: ".to_owned() + &new_job.job_name)
+        .body("The job has been started successfully.")
+        .show()
+        .unwrap();
 
     // Return true to indicate the job has started successfully
     true
@@ -393,6 +416,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
             true,
             0.0,
         );
+        job_failed_notification(job_info.uuid);
         return;
     }
 
@@ -425,6 +449,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                 true,
                 0.0,
             );
+            job_failed_notification(job_info.uuid);
             return;
         }
     }
@@ -445,6 +470,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                         true,
                         0.0,
                     );
+                    job_failed_notification(job_info.uuid);
                     return;
                 }
             }
@@ -462,6 +488,8 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                 true,
                 0.0,
             );
+            job_failed_notification(job_info.uuid);
+
             return;
         }
     }
@@ -549,6 +577,8 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                     true,
                     0.0,
                 );
+                job_failed_notification(job_info.uuid);
+
                 return;
             }
         }
@@ -668,6 +698,8 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                         true,
                         0.0,
                     );
+                    job_failed_notification(job_info.uuid);
+
                     return;
                 }
             }
@@ -699,6 +731,8 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                     true,
                     0.0,
                 );
+                job_failed_notification(job_info.uuid);
+
                 return;
             }
         }
@@ -734,6 +768,8 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             true,
             0.0,
         );
+        job_failed_notification(uuid);
+
         return;
     }
 
@@ -802,6 +838,12 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
                 true,
                 1.0,
             );
+            get_app_handle().notification()
+                .builder()
+                .title("Job Complete: ".to_owned() + &job_info.job_name)
+                .body("The job has been completed.")
+                .show()
+                .unwrap();
         }
     } else {
         // Recopy failed files
@@ -816,6 +858,8 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             true,
             0.0,
         );
+
+        job_failed_notification(uuid);
     }
 }
 
@@ -877,4 +921,21 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
         true,
         1.0,
     );
+
+    get_app_handle().notification()
+        .builder()
+        .title("Job Complete: ".to_owned() + &job_info.job_name)
+        .body("The job has been completed.")
+        .show()
+        .unwrap();
+}
+
+fn job_failed_notification(uuid: String){
+    let job_info = storage_manager::get_job_by_uuid(&uuid);
+    get_app_handle().notification()
+        .builder()
+        .title("Job Failed: ".to_owned() + &job_info.job_name)
+        .body("The job has failed. See status for details.")
+        .show()
+        .unwrap();
 }

@@ -7,6 +7,12 @@ use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use crate::drive_manager::get_root_drive;
 use sysinfo::Disks;
+use std::sync::Mutex;
+use once_cell::sync::OnceCell;
+use tauri::AppHandle;
+
+
+static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -185,6 +191,12 @@ pub fn run() {
             start_job,
             clear_completed_jobs
         ])
+        .setup(|app| {
+            // Store the app handle in a global variable for later use
+            APP_HANDLE.set(Mutex::new(app.handle().clone())).unwrap();
+            job_manager::set_app_handle(app.handle().clone());
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

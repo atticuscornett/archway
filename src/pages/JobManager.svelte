@@ -11,7 +11,7 @@
 
     let loadJobs = async () => {
         try {
-            jobList = JSON.parse(await invoke("get_all_jobs")).slice(-3);
+            jobList = JSON.parse(await invoke("get_all_jobs")).slice();
         } catch (error) {
             toast.error("Something went wrong while loading jobs.");
         }
