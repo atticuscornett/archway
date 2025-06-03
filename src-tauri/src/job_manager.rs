@@ -342,6 +342,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
     // Check if the output directory already exists and handle copies
     if (job_type == "copy" && copies > 1) {
         let mut folder_num = 1;
+        output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, copies)).to_string_lossy().to_string();
         while output_dir_path.exists() && folder_num <= copies {
             output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, folder_num)).to_string_lossy().to_string();
             folder_num += 1;
@@ -500,10 +501,10 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
             }
         }
     }
-    tauri::async_runtime::spawn(job_stage_four(uuid, files, output_paths, output_dir));
+    tauri::async_runtime::spawn(job_stage_four(uuid, files, output_paths));
 }
 
-async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec<String>, output_dir: PathBuf) {
+async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec<String>) {
     update_job_status(uuid.as_str(), 4, String::from("Verifying Files"),
                       String::from("Verifying copied files..."), true, false, 0.0);
 
@@ -548,6 +549,11 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
     }
 
     if (failed_files.is_empty()) {
+        let job_info = storage_manager::get_job_by_uuid(&uuid);
+        if (job_info.file_behavior == "move") {
+            // If moving files, delete the original files
+            tauri::async_runtime::spawn(job_stage_five(uuid.clone(), input_files));
+        }
         println!("All files verified successfully.");
         update_job_status(uuid.as_str(), 4, String::from("Job completed."),
                           String::from("All files verified successfully."), true, true, 1.0);
@@ -558,4 +564,36 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
         update_job_status(uuid.as_str(), 4, String::from("Job failed."),
                           format!("Some files failed verification: {:?}", failed_files), false, true, 0.0);
     }
+}
+
+async fn job_stage_five(uuid: String, input_files: Vec<String>){
+    update_job_status(uuid.as_str(), 5, String::from("Deleting Original Files"),
+                      String::from("Deleting original files..."), true, false, 0.0);
+
+    let job_info = storage_manager::get_job_by_uuid(&uuid);
+    if (job_info.file_behavior != "move") {
+        println!("Job is not set to move files, skipping deletion.");
+        update_job_status(uuid.as_str(), 5, String::from("Job completed."),
+                          String::from("Job is not set to move files, skipping deletion."), true, true, 1.0);
+        return;
+    }
+
+    let total_files = input_files.len() as u32;
+    let mut deleted_files = 0;
+
+    for file in input_files {
+        update_last_action(uuid.as_str(), format!("Deleting file: {} ({}/{})", file, deleted_files, total_files));
+        match std::fs::remove_file(&file) {
+            Ok(_) => {
+                update_last_action(uuid.as_str(), format!("Deleted file: {}", file));
+                deleted_files += 1;
+            }
+            Err(e) => {
+                println!("Failed to delete file {}: {}", file, e);
+            }
+        }
+    }
+
+    update_job_status(uuid.as_str(), 5, String::from("Job completed."),
+                      String::from("All original files deleted successfully."), true, true, 1.0);
 }

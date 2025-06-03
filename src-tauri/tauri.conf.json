@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "archway",
+        "title": "Archway",
         "width": 800,
         "height": 600
       }
