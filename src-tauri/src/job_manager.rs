@@ -244,6 +244,26 @@ async fn job_stage_one(uuid: String) {
                     String::from("pdf"), String::from("txt"), String::from("odt"), String::from("rtf"),
                         String::from("md"), String::from("epub"), String::from("pptx"), String::from("xls"), String::from("xlsx")]);
                 }
+                if (extension == "videos:special"){
+                    allowed_extensions.extend(vec![String::from("mp4"), String::from("mkv"),
+                    String::from("avi"), String::from("mov"), String::from("wmv"), String::from("flv"),
+                        String::from("webm"), String::from("mpeg")]);
+                }
+                if (extension == "pictures:special"){
+                    allowed_extensions.extend(vec![String::from("jpg"), String::from("jpeg"),
+                    String::from("png"), String::from("gif"), String::from("bmp"), String::from("tiff"),
+                        String::from("webp"), String::from("svg")]);
+                }
+                if (extension == "music:special"){
+                    allowed_extensions.extend(vec![String::from("mp3"), String::from("wav"),
+                    String::from("flac"), String::from("aac"), String::from("ogg"), String::from("m4a"),
+                        String::from("wma")]);
+                }
+                if (extension == "archives:special"){
+                    allowed_extensions.extend(vec![String::from("zip"), String::from("rar"),
+                    String::from("tar"), String::from("gz"), String::from("7z"), String::from("bz2"),
+                        String::from("xz")]);
+                }
             }
 
             all_files.retain(|file| {
