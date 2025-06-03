@@ -22,11 +22,13 @@ Job Steps:
  */
 
 pub fn start_job(uuid: String) -> bool {
+    // Check if the job is already running
     let already_running = {
         let job_statuses = JOB_STATUSES.lock().unwrap();
         job_statuses.iter().any(|js| js.job.uuid == uuid && !js.completed)
     };
 
+    // If the job is already running, do not start it again
     if already_running {
         println!("Job with UUID {} is already running.", uuid);
         return false;
@@ -52,6 +54,7 @@ pub fn start_job(uuid: String) -> bool {
 
     tauri::async_runtime::spawn(job_stage_one(uuid));
 
+    // Return true to indicate the job has started successfully
     true
 
 }
@@ -100,6 +103,7 @@ fn update_job_progress(uuid: &str, percent: f32) {
     }
 }
 
+// Gets all subfolders recursively from a given path
 fn get_all_subfolders(path: &str) -> Vec<String> {
     let mut subfolders = Vec::new();
     if let Ok(entries) = std::fs::read_dir(path) {
@@ -114,6 +118,7 @@ fn get_all_subfolders(path: &str) -> Vec<String> {
     subfolders
 }
 
+// Gets all files recursively from a given path
 fn get_all_files(path: &str) -> Vec<String> {
     let mut files = Vec::new();
     if let Ok(entries) = std::fs::read_dir(path) {
@@ -128,6 +133,7 @@ fn get_all_files(path: &str) -> Vec<String> {
     files
 }
 
+// Gets the last access time of a file in seconds since UNIX_EPOCH
 fn get_last_access_time(path: &str) -> std::io::Result<u64> {
     let metadata = fs::metadata(path)?;
     let atime = metadata.accessed()?;
@@ -135,6 +141,7 @@ fn get_last_access_time(path: &str) -> std::io::Result<u64> {
     Ok(duration.as_secs())
 }
 
+// Checks if a file's last access time is older than a specified period
 fn check_older_than(time: u64, period: &str) -> bool{
     let now = SystemTime::now();
     let period_duration = match period {
@@ -159,6 +166,7 @@ fn check_older_than(time: u64, period: &str) -> bool{
     }
 }
 
+// Gets the size of a file in bytes
 fn get_file_size(path: &str) -> std::io::Result<u64> {
     let metadata = fs::metadata(path)?;
     Ok(metadata.len())
@@ -177,12 +185,15 @@ fn compare_files(file1: &str, file2: &str) -> std::io::Result<bool> {
     Ok(hash1 == hash2)
 }
 
+// Stage one of the job: Indexing files to move
 async fn job_stage_one(uuid: String) {
     update_job_status(uuid.as_str(), 1, String::from("Indexing Files"),
                       String::from("Getting all input folders..."), true, false, -1.0);
 
     let input_dirs = storage_manager::get_job_by_uuid(&uuid).input_dirs;
     let mut all_folders: Vec<String> = Vec::new();
+    
+    // Convert library paths to actual directories
     for input_dir in input_dirs {
         if (input_dir.path_type == "library") {
             if (input_dir.path == "documents") {
@@ -214,6 +225,7 @@ async fn job_stage_one(uuid: String) {
     update_last_action(uuid.as_str(), String::from("Getting all files..."));
     update_job_progress(uuid.as_str(), 0.33);
     let mut all_files: Vec<String> = Vec::new();
+    // Get all files from the input directories
     for input_dir in all_folders.iter() {
         all_files.extend(get_all_files(input_dir.as_str()));
     }
@@ -221,7 +233,9 @@ async fn job_stage_one(uuid: String) {
     update_last_action(uuid.as_str(), String::from("Applying filters..."));
     update_job_progress(uuid.as_str(), 0.66);
     let filters = storage_manager::get_job_by_uuid(&uuid).file_filters;
+    // Apply filters to the files
     for filter in filters {
+        // Apply extension filter
         if filter.filter_type == "extension" {
             let mut allowed_extensions = filter.traits.extensions.unwrap();
             for extension in allowed_extensions.clone() {
@@ -237,6 +251,7 @@ async fn job_stage_one(uuid: String) {
                 allowed_extensions.contains(&file_extension.to_lowercase())
             });
         }
+        // Apply size filter
         if (filter.filter_type == "size") {
             let threshold = filter.traits.size.unwrap();
 
@@ -251,6 +266,7 @@ async fn job_stage_one(uuid: String) {
                 }
             });
         }
+        // Apply last used filter
         if (filter.filter_type == "last-used") {
             let threshold = filter.traits.lastused.unwrap();
             all_files.retain(|file| {
@@ -275,6 +291,7 @@ async fn job_stage_one(uuid: String) {
 
 }
 
+// Stage two of the job: Initializing directories
 async fn job_stage_two(uuid: String, files: Vec<String>) {
     update_job_status(uuid.as_str(), 2, String::from("Initializing Directories"),
                       String::from("Initializing directories..."), true, false, -1.0);
@@ -297,7 +314,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         return;
     }
 
-
+    // Ensure the output device matches the drive UUID
     if (output_device != "special:any"){
         if (drive_uuid.is_empty()) {
             println!("Failed to get or create drive UUID.");
@@ -393,6 +410,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
     tauri::async_runtime::spawn(job_stage_three(uuid, files, output_dir_path));
 }
 
+// Stage three of the job: Copying files
 async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) {
     let total_files = files.len() as u32;
     let mut output_paths: Vec<String> = Vec::new();
@@ -504,10 +522,12 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
     tauri::async_runtime::spawn(job_stage_four(uuid, files, output_paths));
 }
 
+// Stage four of the job: Verifying files
 async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec<String>) {
     update_job_status(uuid.as_str(), 4, String::from("Verifying Files"),
                       String::from("Verifying copied files..."), true, false, 0.0);
 
+    // Ensure input and output files match
     if (input_files.len() != output_files.len()) {
         println!("Input and output file counts do not match: {} != {}", input_files.len(), output_files.len());
         update_job_status(uuid.as_str(), 4, String::from("Job failed."),
@@ -519,6 +539,7 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
     let total_files = input_files.len() as u32;
     let mut failed_files: Vec<String> = Vec::new();
 
+    // Iterate through input and output files to verify the hashes match
     for (input_file, output_file) in input_files.iter().zip(output_files.iter()) {
         update_last_action(uuid.as_str(), format!("Verifying file: {} ({}/{})", output_file, verified_files, total_files));
         let input_file_path = PathBuf::from(input_file);
@@ -553,10 +574,11 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
         if (job_info.file_behavior == "move") {
             // If moving files, delete the original files
             tauri::async_runtime::spawn(job_stage_five(uuid.clone(), input_files));
-        }
+        } else {
         println!("All files verified successfully.");
         update_job_status(uuid.as_str(), 4, String::from("Job completed."),
                           String::from("All files verified successfully."), true, true, 1.0);
+        }
     } else {
         // Recopy failed files
         println!("Some files failed verification: {:?}", failed_files);
@@ -566,6 +588,8 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
     }
 }
 
+
+// Stage five of the job: Deleting original files (if moving files)
 async fn job_stage_five(uuid: String, input_files: Vec<String>){
     update_job_status(uuid.as_str(), 5, String::from("Deleting Original Files"),
                       String::from("Deleting original files..."), true, false, 0.0);
