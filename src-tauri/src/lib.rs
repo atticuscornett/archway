@@ -10,7 +10,8 @@ use sysinfo::Disks;
 use std::sync::Mutex;
 use once_cell::sync::OnceCell;
 use tauri::AppHandle;
-
+use tauri::menu::{Menu, MenuItem};
+use tauri::tray::TrayIconBuilder;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 
@@ -195,6 +196,28 @@ pub fn run() {
             // Store the app handle in a global variable for later use
             APP_HANDLE.set(Mutex::new(app.handle().clone())).unwrap();
             job_manager::set_app_handle(app.handle().clone());
+
+            let app_title = MenuItem::with_id(app, "app_title", "Archway", true, None::<&str>)?;
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&app_title, &quit_i])?;
+
+            // Tray icon setup
+            let mut tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&menu)
+                .show_menu_on_left_click(true);
+
+            tray = tray.on_menu_event(|app, event| {
+                if event.id() == "quit" {
+                    // TODO: Quit running jobs gracefully
+                    app.exit(0);
+                } else if event.id() == "app_title" {
+                    // Open Main Window
+                }
+            });
+
+
+            tray.build(app)?;
             Ok(())
         })
         .run(tauri::generate_context!())

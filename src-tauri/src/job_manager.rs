@@ -939,3 +939,8 @@ fn job_failed_notification(uuid: String){
         .show()
         .unwrap();
 }
+
+pub fn get_active_jobs() -> u8{
+    let job_statuses = JOB_STATUSES.lock().unwrap();
+    job_statuses.iter().filter(|js| !js.completed).count() as u8
+}
