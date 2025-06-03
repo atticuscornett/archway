@@ -62,5 +62,5 @@ pub(crate) struct JobStatus {
     pub last_action: String,
     pub success: bool,
     pub completed: bool,
-    pub percent: f32
+    pub percent: f32,
 }

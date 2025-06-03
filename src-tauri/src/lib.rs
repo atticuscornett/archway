@@ -1,12 +1,12 @@
 mod drive_manager;
-mod structs;
-mod storage_manager;
 mod job_manager;
+mod storage_manager;
+mod structs;
 
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use sysinfo::Disks;
 use crate::drive_manager::get_root_drive;
+use sysinfo::Disks;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -30,7 +30,7 @@ fn get_drives() -> Vec<Vec<String>> {
 }
 
 #[tauri::command]
-fn clear_completed_jobs(){
+fn clear_completed_jobs() {
     job_manager::clear_completed_jobs();
 }
 
@@ -155,7 +155,7 @@ fn setup_job(job_info: String) -> bool {
         // Add new job
         all_jobs.push(new_job.clone());
     }
-    
+
     if !storage_manager::set_all_jobs(all_jobs) {
         println!("Failed to save jobs to storage.");
         return false;
@@ -169,12 +169,22 @@ fn setup_job(job_info: String) -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, get_drives, get_documents, setup_job,
-            get_all_jobs, get_job_by_uuid, remove_job_by_uuid, get_all_job_statuses, start_job,
-            clear_completed_jobs])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            get_drives,
+            get_documents,
+            setup_job,
+            get_all_jobs,
+            get_job_by_uuid,
+            remove_job_by_uuid,
+            get_all_job_statuses,
+            start_job,
+            clear_completed_jobs
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

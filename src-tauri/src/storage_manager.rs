@@ -10,24 +10,37 @@ pub fn to_json_string<T: serde::Serialize>(data: &T) -> String {
     }
 }
 
-pub fn from_json_string<T: serde::de::DeserializeOwned>(json: String) -> Result<T, serde_json::Error> {
+pub fn from_json_string<T: serde::de::DeserializeOwned>(
+    json: String,
+) -> Result<T, serde_json::Error> {
     serde_json::from_str(&json)
 }
 
-pub fn read_json_file<T: serde::de::DeserializeOwned>(file_path: String) -> Result<T, std::io::Error> {
+pub fn read_json_file<T: serde::de::DeserializeOwned>(
+    file_path: String,
+) -> Result<T, std::io::Error> {
     let file = std::fs::File::open(file_path)?;
     let reader = std::io::BufReader::new(file);
-    serde_json::from_reader(reader).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
+    serde_json::from_reader(reader)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
 }
 
-pub fn write_json_file<T: serde::Serialize>(file_path: String, data: &T) -> Result<(), std::io::Error> {
+pub fn write_json_file<T: serde::Serialize>(
+    file_path: String,
+    data: &T,
+) -> Result<(), std::io::Error> {
     let file = std::fs::File::create(file_path)?;
     let writer = std::io::BufWriter::new(file);
-    serde_json::to_writer(writer, data).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
+    serde_json::to_writer(writer, data)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
 }
 
-pub fn file_with_executable(file: &str) -> String{
-    let mut executable_path = std::env::current_exe().unwrap().parent().unwrap().to_path_buf();
+pub fn file_with_executable(file: &str) -> String {
+    let mut executable_path = std::env::current_exe()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_path_buf();
     executable_path = executable_path.join(file).to_path_buf();
     executable_path.to_string_lossy().to_string()
 }
@@ -48,7 +61,10 @@ pub fn get_all_jobs() -> Vec<JobInfo> {
 
 pub fn get_job_by_uuid(uuid: &str) -> JobInfo {
     let all_jobs = get_all_jobs();
-    all_jobs.into_iter().find(|job| job.uuid == uuid).expect("Job not found")
+    all_jobs
+        .into_iter()
+        .find(|job| job.uuid == uuid)
+        .expect("Job not found")
 }
 
 pub fn remove_job_by_uuid(uuid: &str) -> bool {
