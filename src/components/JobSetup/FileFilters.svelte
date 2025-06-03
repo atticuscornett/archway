@@ -101,7 +101,7 @@
             job["file_filters"].push({
                 "filter_type": "last-used",
                 "traits": {
-                    "lastused": lastUsedFilterValue.replace(" ", "").toLowerCase()
+                    "period": lastUsedFilterValue.replace(" ", "").toLowerCase()
                 }
             });
         }

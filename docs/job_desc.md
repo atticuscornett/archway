@@ -38,7 +38,7 @@ imported on other devices.
       - `'size'` (string): A file size filter.
     - `traits` (Object):
         - `size` (int): The size of the file in megabytes.
-        - `lastused` (string): The last used date of the file.
+        - `period` (string): The period of time for multiple filter types.
           - **Values:**
             - `'week'` (string): The file has not been used in the last week.
             - `'2weeks'` (string): The file has not been used in the last two weeks.

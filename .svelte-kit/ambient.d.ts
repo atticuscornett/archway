@@ -39,6 +39,8 @@ declare module '$env/static/private' {
 	export const EDITOR: string;
 	export const EnableLog: string;
 	export const FIG_TERM: string;
+	export const FPS_BROWSER_APP_PROFILE_STRING: string;
+	export const FPS_BROWSER_USER_PROFILE_STRING: string;
 	export const HOME: string;
 	export const HOMEDRIVE: string;
 	export const HOMEPATH: string;
@@ -92,7 +94,6 @@ declare module '$env/static/private' {
 	export const PSModulePath: string;
 	export const PUBLIC: string;
 	export const RlsSvcPort: string;
-	export const SESSIONNAME: string;
 	export const SystemDrive: string;
 	export const SystemRoot: string;
 	export const TAURI_CLI_VERBOSITY: string;
@@ -106,7 +107,6 @@ declare module '$env/static/private' {
 	export const TERMINAL_EMULATOR: string;
 	export const TERM_SESSION_ID: string;
 	export const TMP: string;
-	export const TOOLBOX_VERSION: string;
 	export const USERDOMAIN: string;
 	export const USERDOMAIN_ROAMINGPROFILE: string;
 	export const USERNAME: string;
@@ -157,6 +157,8 @@ declare module '$env/dynamic/private' {
 		EDITOR: string;
 		EnableLog: string;
 		FIG_TERM: string;
+		FPS_BROWSER_APP_PROFILE_STRING: string;
+		FPS_BROWSER_USER_PROFILE_STRING: string;
 		HOME: string;
 		HOMEDRIVE: string;
 		HOMEPATH: string;
@@ -210,7 +212,6 @@ declare module '$env/dynamic/private' {
 		PSModulePath: string;
 		PUBLIC: string;
 		RlsSvcPort: string;
-		SESSIONNAME: string;
 		SystemDrive: string;
 		SystemRoot: string;
 		TAURI_CLI_VERBOSITY: string;
@@ -224,7 +225,6 @@ declare module '$env/dynamic/private' {
 		TERMINAL_EMULATOR: string;
 		TERM_SESSION_ID: string;
 		TMP: string;
-		TOOLBOX_VERSION: string;
 		USERDOMAIN: string;
 		USERDOMAIN_ROAMINGPROFILE: string;
 		USERNAME: string;

@@ -363,7 +363,7 @@ async fn job_stage_one(uuid: String) {
         }
         // Apply last used filter
         if filter.filter_type == "last-used" {
-            let threshold = filter.traits.lastused.unwrap();
+            let threshold = filter.traits.period.unwrap();
             all_files.retain(|file| {
                 match get_last_access_time(file.as_str()) {
                     Ok(last_accessed) => check_older_than(last_accessed, threshold.as_str()),

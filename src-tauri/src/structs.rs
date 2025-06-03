@@ -9,7 +9,7 @@ pub(crate) struct InputFile {
 #[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct FilterTraits {
     pub size: Option<u64>,
-    pub lastused: Option<String>,
+    pub period: Option<String>,
     pub extensions: Option<Vec<String>>,
 }
 
