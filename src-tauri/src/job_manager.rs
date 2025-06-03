@@ -6,8 +6,6 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use sha2::{Sha256, Digest};
-use std::fs::File;
-use std::io::{BufReader, Read};
 use std::io;
 
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
@@ -195,23 +193,23 @@ async fn job_stage_one(uuid: String) {
     
     // Convert library paths to actual directories
     for input_dir in input_dirs {
-        if (input_dir.path_type == "library") {
-            if (input_dir.path == "documents") {
+        if input_dir.path_type == "library" {
+            if input_dir.path == "documents" {
                 let documents_path = dirs::document_dir().unwrap();
                 all_folders.push(documents_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "downloads") {
+            } else if input_dir.path == "downloads" {
                 let downloads_path = dirs::download_dir().unwrap();
                 all_folders.push(downloads_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "desktop") {
+            } else if input_dir.path == "desktop" {
                 let desktop_path = dirs::desktop_dir().unwrap();
                 all_folders.push(desktop_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "music") {
+            } else if input_dir.path == "music" {
                 let music_path = dirs::audio_dir().unwrap();
                 all_folders.push(music_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "pictures") {
+            } else if input_dir.path == "pictures" {
                 let pictures_path = dirs::picture_dir().unwrap();
                 all_folders.push(pictures_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "videos") {
+            } else if input_dir.path == "videos" {
                 let videos_path = dirs::video_dir().unwrap();
                 all_folders.push(videos_path.to_string_lossy().to_string());
             } else {
@@ -239,27 +237,27 @@ async fn job_stage_one(uuid: String) {
         if filter.filter_type == "extension" {
             let mut allowed_extensions = filter.traits.extensions.unwrap();
             for extension in allowed_extensions.clone() {
-                if (extension == "documents:special"){
+                if extension == "documents:special"{
                     allowed_extensions.extend(vec![String::from("doc"), String::from("docx"),
                     String::from("pdf"), String::from("txt"), String::from("odt"), String::from("rtf"),
                         String::from("md"), String::from("epub"), String::from("pptx"), String::from("xls"), String::from("xlsx")]);
                 }
-                if (extension == "videos:special"){
+                if extension == "videos:special"{
                     allowed_extensions.extend(vec![String::from("mp4"), String::from("mkv"),
                     String::from("avi"), String::from("mov"), String::from("wmv"), String::from("flv"),
                         String::from("webm"), String::from("mpeg")]);
                 }
-                if (extension == "pictures:special"){
+                if extension == "pictures:special"{
                     allowed_extensions.extend(vec![String::from("jpg"), String::from("jpeg"),
                     String::from("png"), String::from("gif"), String::from("bmp"), String::from("tiff"),
                         String::from("webp"), String::from("svg")]);
                 }
-                if (extension == "music:special"){
+                if extension == "music:special"{
                     allowed_extensions.extend(vec![String::from("mp3"), String::from("wav"),
                     String::from("flac"), String::from("aac"), String::from("ogg"), String::from("m4a"),
                         String::from("wma")]);
                 }
-                if (extension == "archives:special"){
+                if extension == "archives:special"{
                     allowed_extensions.extend(vec![String::from("zip"), String::from("rar"),
                     String::from("tar"), String::from("gz"), String::from("7z"), String::from("bz2"),
                         String::from("xz")]);
@@ -272,7 +270,7 @@ async fn job_stage_one(uuid: String) {
             });
         }
         // Apply size filter
-        if (filter.filter_type == "size") {
+        if filter.filter_type == "size" {
             let threshold = filter.traits.size.unwrap();
 
 
@@ -287,7 +285,7 @@ async fn job_stage_one(uuid: String) {
             });
         }
         // Apply last used filter
-        if (filter.filter_type == "last-used") {
+        if filter.filter_type == "last-used" {
             let threshold = filter.traits.lastused.unwrap();
             all_files.retain(|file| {
                 match get_last_access_time(file.as_str()) {
@@ -335,14 +333,14 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
     }
 
     // Ensure the output device matches the drive UUID
-    if (output_device != "special:any"){
-        if (drive_uuid.is_empty()) {
+    if output_device != "special:any"{
+        if drive_uuid.is_empty() {
             println!("Failed to get or create drive UUID.");
             update_job_status(uuid.as_str(), 2, String::from("Job failed."),
                               String::from("Failed to get or create drive UUID."), false, true, 0.0);
             return;
         }
-        if (drive_uuid != output_device) {
+        if drive_uuid != output_device {
             println!("Drive UUID does not match job output device: {} != {}", drive_uuid, output_device);
             update_job_status(uuid.as_str(), 2, String::from("Job failed."),
                               String::from("Drive UUID does not match job output device."), false, true, 0.0);
@@ -352,7 +350,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
 
     // Ensure the output directory exists
     if !std::path::Path::new(&output_dir).exists() {
-        if (job_info.new_folder.clone()) {
+        if job_info.new_folder.clone() {
             match std::fs::create_dir_all(&output_dir) {
                 Ok(_) => println!("Created output directory: {}", output_dir),
                 Err(e) => {
@@ -377,7 +375,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
     output_dir = output_dir_path.to_string_lossy().to_string();
 
     // Check if the output directory already exists and handle copies
-    if (job_type == "copy" && copies > 1) {
+    if job_type == "copy" && copies > 1 {
         let mut folder_num = 1;
         output_dir = output_dir_path.with_file_name(format!("archway-{}-{}", job_info.uuid, copies)).to_string_lossy().to_string();
         while output_dir_path.exists() && folder_num <= copies {
@@ -442,27 +440,27 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
     println!("Output directory: {}", output_dir.display());
 
     let job_info = storage_manager::get_job_by_uuid(&uuid);
-    let mut input_dirs_struct = job_info.input_dirs.clone();
+    let input_dirs_struct = job_info.input_dirs.clone();
     let mut input_dirs_cleaned: Vec<String> = Vec::new();
 
     for input_dir in input_dirs_struct {
-        if (input_dir.path_type == "library") {
-            if (input_dir.path == "documents") {
+        if input_dir.path_type == "library" {
+            if input_dir.path == "documents" {
                 let documents_path = dirs::document_dir().unwrap();
                 input_dirs_cleaned.push(documents_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "downloads") {
+            } else if input_dir.path == "downloads" {
                 let downloads_path = dirs::download_dir().unwrap();
                 input_dirs_cleaned.push(downloads_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "desktop") {
+            } else if input_dir.path == "desktop" {
                 let desktop_path = dirs::desktop_dir().unwrap();
                 input_dirs_cleaned.push(desktop_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "music") {
+            } else if input_dir.path == "music" {
                 let music_path = dirs::audio_dir().unwrap();
                 input_dirs_cleaned.push(music_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "pictures") {
+            } else if input_dir.path == "pictures" {
                 let pictures_path = dirs::picture_dir().unwrap();
                 input_dirs_cleaned.push(pictures_path.to_string_lossy().to_string());
-            } else if (input_dir.path == "videos") {
+            } else if input_dir.path == "videos" {
                 let videos_path = dirs::video_dir().unwrap();
                 input_dirs_cleaned.push(videos_path.to_string_lossy().to_string());
             } else {
@@ -527,7 +525,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
         match std::fs::copy(&file, &output_file) {
             Ok(_) => {
                 processed_files += 1;
-                let percent = (processed_files as f32 / total_files as f32);
+                let percent = processed_files as f32 / total_files as f32;
                 update_job_progress(uuid.as_str(), percent);
                 update_last_action(uuid.as_str(), format!("Copied file: {} ({}/{})", file_path_str, processed_files, total_files));
             }
@@ -548,7 +546,7 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
                       String::from("Verifying copied files..."), true, false, 0.0);
 
     // Ensure input and output files match
-    if (input_files.len() != output_files.len()) {
+    if input_files.len() != output_files.len() {
         println!("Input and output file counts do not match: {} != {}", input_files.len(), output_files.len());
         update_job_status(uuid.as_str(), 4, String::from("Job failed."),
                           String::from("Input and output file counts do not match."), false, true, 0.0);
@@ -574,7 +572,7 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
         match compare_files(input_file_path.to_str().unwrap(), output_file_path.to_str().unwrap()) {
             Ok(true) => {
                 verified_files += 1;
-                let percent = (verified_files as f32 / total_files as f32);
+                let percent = verified_files as f32 / total_files as f32;
                 update_job_progress(uuid.as_str(), percent);
                 update_last_action(uuid.as_str(), format!("Verified file: {} ({}/{})", output_file, verified_files, total_files));
             }
@@ -589,9 +587,9 @@ async fn job_stage_four(uuid:String, input_files: Vec<String>, output_files: Vec
         }
     }
 
-    if (failed_files.is_empty()) {
+    if failed_files.is_empty() {
         let job_info = storage_manager::get_job_by_uuid(&uuid);
-        if (job_info.file_behavior == "move") {
+        if job_info.file_behavior == "move" {
             // If moving files, delete the original files
             tauri::async_runtime::spawn(job_stage_five(uuid.clone(), input_files));
         } else {
@@ -615,7 +613,7 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>){
                       String::from("Deleting original files..."), true, false, 0.0);
 
     let job_info = storage_manager::get_job_by_uuid(&uuid);
-    if (job_info.file_behavior != "move") {
+    if job_info.file_behavior != "move" {
         println!("Job is not set to move files, skipping deletion.");
         update_job_status(uuid.as_str(), 5, String::from("Job completed."),
                           String::from("Job is not set to move files, skipping deletion."), true, true, 1.0);

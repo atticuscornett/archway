@@ -49,7 +49,7 @@ pub fn add_job_to_drive(drive_name: &str, job_info: JobInfo) -> bool {
         println!("Drive info file does not exist at {}", uuid_path.display());
         let drive_uuid = get_drive_uuid(drive_name);
 
-        if (drive_uuid.is_empty()) {
+        if drive_uuid.is_empty() {
             println!("Failed to get or create drive UUID.");
             return false;
         }

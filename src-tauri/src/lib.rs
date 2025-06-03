@@ -5,9 +5,7 @@ mod job_manager;
 
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use std::path::Path;
 use sysinfo::Disks;
-use tauri::{command, AppHandle};
 use crate::drive_manager::get_root_drive;
 
 #[tauri::command]
