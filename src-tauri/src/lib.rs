@@ -9,7 +9,7 @@ use crate::drive_manager::get_root_drive;
 use sysinfo::Disks;
 use std::sync::Mutex;
 use once_cell::sync::OnceCell;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager, WindowEvent};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 
@@ -213,12 +213,24 @@ pub fn run() {
                     app.exit(0);
                 } else if event.id() == "app_title" {
                     // Open Main Window
+                    println!("Opening main window");
+                    let main_window = app.get_webview_window("main")
+                        .expect("no main window");
+                    main_window.show().unwrap();
+                    main_window.set_focus().unwrap();
                 }
             });
 
 
             tray.build(app)?;
             Ok(())
+        })
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                window.hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
