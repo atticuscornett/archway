@@ -12,6 +12,8 @@ use sysinfo::Disks;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager, WindowEvent};
+use tauri_plugin_notification::NotificationExt;
+use crate::job_manager::get_app_handle;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 
@@ -238,7 +240,47 @@ pub fn run() {
 
             tray = tray.on_menu_event(|app, event| {
                 if event.id() == "quit" {
-                    // TODO: Quit running jobs gracefully
+                    let running_jobs = job_manager::get_all_job_statuses();
+                    let mut job_count = 99;
+                    let mut iter = 0;
+
+                    // Hide main window
+                    let main_window = app.get_webview_window("main").expect("no main window");
+                    main_window.hide().unwrap();
+
+                    // Wait for jobs to stop or stop after 30 seconds
+                    while iter < 3 && job_count > 0{
+                        job_count = 0;
+                        for job in running_jobs.clone() {
+                            if job.completed || !job.success {
+                                continue;
+                            }
+                            job_count += 1;
+                            job_manager::set_job_update(job.job.uuid, "stop_requested".to_string());
+                        }
+
+                        if (job_count > 0){
+                            // Give jobs time to stop
+                            std::thread::sleep(std::time::Duration::from_secs(10));
+
+                            if (iter == 0) {
+                                // Notify user Archway is stopping jobs
+                                get_app_handle()
+                                    .notification()
+                                    .builder()
+                                    .title("Archway is stopping jobs...")
+                                    .body("Archway is attempting to stop all running jobs. This may take a few moments.")
+                                    .show()
+                                    .unwrap();
+                            }
+                        }
+
+                        iter += 1;
+                    }
+
+
+
+
                     app.exit(0);
                 } else if event.id() == "app_title" {
                     // Open Main Window
