@@ -5,17 +5,22 @@
     import { onMount } from "svelte";
     import * as Card from "$lib/components/ui/card/index.js";
     import {Button} from "$lib/components/ui/button";
-    import {Plus, Home, Pencil, Play, Trash2, SquareX, CircleX, CircleCheck} from "@lucide/svelte";
+    import {Plus, Home, Pencil, Play, Trash2, SquareX, CircleX, CircleCheck, Pause, Octagon} from "@lucide/svelte";
     import {Progress} from "$lib/components/ui/progress";
 
     let statusList: Object[] = $state([]);
+    let updateList = $state({});
 
     let loadJobs = async () => {
         if (page === "Status") {
             try {
                 statusList = JSON.parse(await invoke("get_all_job_statuses"));
+                for (let job of statusList){
+                    updateList[job["job"]["uuid"]] = await invoke("get_job_update", {uuid: job["job"]["uuid"]});
+                }
             }
             catch (e){
+                console.error("Error loading job statuses:", e);
                 toast.error("Failed to load job statuses.");
             }
             setTimeout(loadJobs, 2500); // Refresh every 2.5 seconds
@@ -30,6 +35,21 @@
         catch (e){
             toast.error("Failed to load job statuses.");
         }
+    };
+
+    let pauseJob = async (jobUuid: string) => {
+        await invoke("pause_job", {uuid: jobUuid});
+        updateList[jobUuid] = "pause_requested";
+    };
+
+    let resumeJob = async (jobUuid: string) => {
+        await invoke("unpause_job", {uuid: jobUuid});
+        updateList[jobUuid] = "running";
+    };
+
+    let stopJob = async (jobUuid: string) => {
+        await invoke("stop_job", {uuid: jobUuid});
+        updateList[jobUuid] = "stop_requested";
     };
 
 
@@ -68,16 +88,29 @@
                             {/if}
                         {:else}
                             <h3>Step {status["step"]} of {status["total_steps"]}: {status["step_title"]}...</h3>
-                            <h4 class="mb-2">{status["last_action"]}</h4>
+                            <h4 class="mb-2 break-all">{status["last_action"]}</h4>
 
                             <Progress value={status["percent"]*100}></Progress>
                         {/if}
                     </Card.Content>
-                    <div class="absolute top-4 right-4">
-    <!--                    <Button class="mb-2"><Play/> Start Job</Button>-->
-    <!--                    <br>-->
-    <!--                    <Button class="mb-2" onclick={()=>{page="SetUpAutomation:"+status["job"]["uuid"]}}><Pencil/> Edit Job</Button>-->
-                    </div>
+                    {#if !status["completed"]}
+                        <div class="absolute top-4 right-4">
+                            {#if updateList[status["job"]["uuid"]] === "running"}
+                                <Button class="mb-2" onclick={()=>{pauseJob(status["job"]["uuid"])}}><Pause/> Pause Job</Button>
+                            {:else if updateList[status["job"]["uuid"]] === "pause_requested"}
+                                <Button class="mb-2" disabled><Pause/> Pausing...</Button>
+                            {:else}
+                                <Button class="mb-2" onclick={()=>{resumeJob(status["job"]["uuid"])}}><Play/> Resume Job</Button>
+                            {/if}
+                            <br>
+                            {#if updateList[status["job"]["uuid"]] === "stop_requested"}
+                                <Button variant="destructive" class="mb-2" disabled><Octagon/> Stopping...</Button>
+                            {:else}
+                                <Button variant="destructive" class="mb-2" onclick={()=>{stopJob(status["job"]["uuid"])}}><Octagon/> Stop Job</Button>
+                            {/if}
+
+                        </div>
+                    {/if}
                 </div>
             </Card.Root>
         {/each}

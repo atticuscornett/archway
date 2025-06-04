@@ -184,6 +184,11 @@ fn unpause_job(uuid: String) {
 }
 
 #[tauri::command]
+fn get_job_update(uuid: String) -> String {
+    job_manager::get_job_update(uuid.clone())
+}
+
+#[tauri::command]
 fn stop_job(uuid: String) {
     job_manager::set_job_update(uuid.clone(), "stop_requested".to_string());
 }
@@ -213,7 +218,8 @@ pub fn run() {
             clear_completed_jobs,
             pause_job,
             unpause_job,
-            stop_job
+            stop_job,
+            get_job_update
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use
