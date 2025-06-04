@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::structs::{JobInfo, JobStatus};
 use crate::{drive_manager, storage_manager};
 use once_cell::sync::{Lazy, OnceCell};
@@ -12,6 +13,7 @@ use tauri_plugin_notification::NotificationExt;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
+static JOB_UPDATES: OnceCell<Mutex<HashMap<String, String>>> = OnceCell::new();
 
 /*
 Job Steps:
@@ -24,6 +26,27 @@ Job Steps:
 
 pub fn set_app_handle(app_handle: AppHandle) {
     APP_HANDLE.set(Mutex::new(app_handle)).unwrap();
+}
+
+pub fn set_job_update(uuid: String, update: String) {
+    let mut job_updates = JOB_UPDATES
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .expect("Failed to lock job updates");
+    job_updates.insert(uuid, update);
+}
+
+pub fn get_job_update(uuid: String) -> String {
+    let job_updates = JOB_UPDATES
+        .get()
+        .expect("Job updates not initialized")
+        .lock()
+        .expect("Failed to lock job updates");
+    if (job_updates.contains_key(&uuid)) {
+        job_updates.get(&uuid).unwrap().clone()
+    } else {
+        "not_running".to_string()
+    }
 }
 
 pub fn get_app_handle() -> AppHandle {
@@ -70,6 +93,7 @@ pub fn start_job(uuid: String) -> bool {
     };
 
     JOB_STATUSES.lock().unwrap().push(new_job_status);
+    set_job_update(uuid.clone(), "running".to_string());
 
     tauri::async_runtime::spawn(job_stage_one(uuid));
 
@@ -375,6 +399,9 @@ async fn job_stage_one(uuid: String) {
                 }
             });
         }
+        if handle_pause_stop(uuid.clone()){
+            return;
+        }
     }
 
     println!("All folders to move: {:?}", all_folders);
@@ -417,6 +444,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
             true,
             0.0,
         );
+        set_job_update(uuid.clone(), "not_running".to_string());
         job_failed_notification(job_info.uuid);
         return;
     }
@@ -450,6 +478,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                 true,
                 0.0,
             );
+            set_job_update(uuid.clone(), "not_running".to_string());
             job_failed_notification(job_info.uuid);
             return;
         }
@@ -471,6 +500,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                         true,
                         0.0,
                     );
+                    set_job_update(uuid.clone(), "not_running".to_string());
                     job_failed_notification(job_info.uuid);
                     return;
                 }
@@ -489,6 +519,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                 true,
                 0.0,
             );
+            set_job_update(uuid.clone(), "not_running".to_string());
             job_failed_notification(job_info.uuid);
 
             return;
@@ -578,6 +609,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
                     true,
                     0.0,
                 );
+                set_job_update(uuid.clone(), "not_running".to_string());
                 job_failed_notification(job_info.uuid);
 
                 return;
@@ -639,6 +671,10 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
     }
 
     for file in &files {
+        if handle_pause_stop(uuid.clone()){
+            return;
+        }
+
         let file_path = PathBuf::from(&file);
         let mut file_path_str = file_path.to_string_lossy().to_string();
         update_last_action(
@@ -699,6 +735,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                         true,
                         0.0,
                     );
+                    set_job_update(uuid.clone(), "not_running".to_string());
                     job_failed_notification(job_info.uuid);
 
                     return;
@@ -732,6 +769,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                     true,
                     0.0,
                 );
+                set_job_update(uuid.clone(), "not_running".to_string());
                 job_failed_notification(job_info.uuid);
 
                 return;
@@ -769,6 +807,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             true,
             0.0,
         );
+        set_job_update(uuid.clone(), "not_running".to_string());
         job_failed_notification(uuid);
 
         return;
@@ -780,6 +819,9 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
 
     // Iterate through input and output files to verify the hashes match
     for (input_file, output_file) in input_files.iter().zip(output_files.iter()) {
+        if handle_pause_stop(uuid.clone()){
+            return;
+        }
         update_last_action(
             uuid.as_str(),
             format!(
@@ -830,6 +872,8 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             tauri::async_runtime::spawn(job_stage_five(uuid.clone(), input_files));
         } else {
             println!("All files verified successfully.");
+            set_job_update(uuid.clone(), "not_running".to_string());
+
             update_job_status(
                 uuid.as_str(),
                 4,
@@ -861,6 +905,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             0.0,
         );
 
+        set_job_update(uuid.clone(), "not_running".to_string());
         job_failed_notification(uuid);
     }
 }
@@ -896,6 +941,9 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
     let mut deleted_files = 0;
 
     for file in input_files {
+        if handle_pause_stop(uuid.clone()){
+            return;
+        }
         update_last_action(
             uuid.as_str(),
             format!(
@@ -914,6 +962,7 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
         }
     }
 
+    set_job_update(uuid.clone(), "not_running".to_string());
     update_job_status(
         uuid.as_str(),
         5,
@@ -947,4 +996,29 @@ fn job_failed_notification(uuid: String) {
 pub fn get_active_jobs() -> u8 {
     let job_statuses = JOB_STATUSES.lock().unwrap();
     job_statuses.iter().filter(|js| !js.completed).count() as u8
+}
+
+fn handle_pause_stop(uuid: String) -> bool {
+    if get_job_update(uuid.clone()) == "pause_requested" {
+        set_job_update(uuid.clone(), "paused".to_string());
+    }
+    while get_job_update(uuid.clone()) == "paused" {
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+
+    if get_job_update(uuid.clone()) == "stop_requested" {
+        set_job_update(uuid.clone(), "not_running".to_string());
+        update_job_status(
+            &uuid,
+            0,
+            String::from("Job Stopped"),
+            String::from("The job has been stopped by the user."),
+            false,
+            true,
+            0.0,
+        );
+        job_failed_notification(uuid);
+        return true;
+    }
+    return false;
 }

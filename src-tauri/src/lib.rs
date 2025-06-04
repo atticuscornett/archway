@@ -173,6 +173,21 @@ fn setup_job(job_info: String) -> bool {
     return true;
 }
 
+#[tauri::command]
+fn pause_job(uuid: String) {
+    job_manager::set_job_update(uuid.clone(), "pause_requested".to_string());
+}
+
+#[tauri::command]
+fn unpause_job(uuid: String) {
+    job_manager::set_job_update(uuid.clone(), "running".to_string());
+}
+
+#[tauri::command]
+fn stop_job(uuid: String) {
+    job_manager::set_job_update(uuid.clone(), "stop_requested".to_string());
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -195,7 +210,10 @@ pub fn run() {
             remove_job_by_uuid,
             get_all_job_statuses,
             start_job,
-            clear_completed_jobs
+            clear_completed_jobs,
+            pause_job,
+            unpause_job,
+            stop_job
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use
