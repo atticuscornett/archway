@@ -73,7 +73,8 @@ pub fn start_job(uuid: String) -> bool {
 
     tauri::async_runtime::spawn(job_stage_one(uuid));
 
-    get_app_handle().notification()
+    get_app_handle()
+        .notification()
         .builder()
         .title("Job Started: ".to_owned() + &new_job.job_name)
         .body("The job has been started successfully.")
@@ -838,7 +839,8 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
                 true,
                 1.0,
             );
-            get_app_handle().notification()
+            get_app_handle()
+                .notification()
                 .builder()
                 .title("Job Complete: ".to_owned() + &job_info.job_name)
                 .body("The job has been completed.")
@@ -922,7 +924,8 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
         1.0,
     );
 
-    get_app_handle().notification()
+    get_app_handle()
+        .notification()
         .builder()
         .title("Job Complete: ".to_owned() + &job_info.job_name)
         .body("The job has been completed.")
@@ -930,9 +933,10 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
         .unwrap();
 }
 
-fn job_failed_notification(uuid: String){
+fn job_failed_notification(uuid: String) {
     let job_info = storage_manager::get_job_by_uuid(&uuid);
-    get_app_handle().notification()
+    get_app_handle()
+        .notification()
         .builder()
         .title("Job Failed: ".to_owned() + &job_info.job_name)
         .body("The job has failed. See status for details.")
@@ -940,7 +944,7 @@ fn job_failed_notification(uuid: String){
         .unwrap();
 }
 
-pub fn get_active_jobs() -> u8{
+pub fn get_active_jobs() -> u8 {
     let job_statuses = JOB_STATUSES.lock().unwrap();
     job_statuses.iter().filter(|js| !js.completed).count() as u8
 }

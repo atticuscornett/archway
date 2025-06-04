@@ -6,12 +6,12 @@ mod structs;
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use crate::drive_manager::get_root_drive;
-use sysinfo::Disks;
-use std::sync::Mutex;
 use once_cell::sync::OnceCell;
-use tauri::{AppHandle, Manager, WindowEvent};
+use std::sync::Mutex;
+use sysinfo::Disks;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
+use tauri::{AppHandle, Manager, WindowEvent};
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 
@@ -176,6 +176,11 @@ fn setup_job(job_info: String) -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, args, cws| {
+            let main_window = app.get_webview_window("main").expect("no main window");
+            main_window.show().unwrap();
+            main_window.set_focus().unwrap();
+        }))
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -214,13 +219,11 @@ pub fn run() {
                 } else if event.id() == "app_title" {
                     // Open Main Window
                     println!("Opening main window");
-                    let main_window = app.get_webview_window("main")
-                        .expect("no main window");
+                    let main_window = app.get_webview_window("main").expect("no main window");
                     main_window.show().unwrap();
                     main_window.set_focus().unwrap();
                 }
             });
-
 
             tray.build(app)?;
             Ok(())
