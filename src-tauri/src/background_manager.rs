@@ -1,4 +1,5 @@
 use crate::{drive_manager, job_manager, storage_manager};
+use crate::drive_manager::get_drive_uuid;
 use crate::job_manager::start_job;
 use crate::structs::JobInfo;
 
@@ -51,6 +52,17 @@ pub async fn background_worker() {
                         }
                     }
                 }
+                else {
+                    let required_drive = job.output_device.clone();
+                    
+                    for new_drive in &new_drives {
+                        
+                        if drive_uuid == required_drive {
+                            println!("Triggering job {} for new drive {}", job.clone().job_name, required_drive);
+                            job_manager::start_job(job.clone().uuid);
+                        }
+                    }
+                }
             }
 
         } else {
@@ -58,6 +70,6 @@ pub async fn background_worker() {
         }
 
 
-        std::thread::sleep(std::time::Duration::from_secs(15));
+        std::thread::sleep(std::time::Duration::from_secs(60));
     }
 }
