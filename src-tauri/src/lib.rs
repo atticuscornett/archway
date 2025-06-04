@@ -2,6 +2,7 @@ mod drive_manager;
 mod job_manager;
 mod storage_manager;
 mod structs;
+mod background_manager;
 
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -227,6 +228,8 @@ pub fn run() {
             // Store the app handle in a global variable for later use
             APP_HANDLE.set(Mutex::new(app.handle().clone())).unwrap();
             job_manager::set_app_handle(app.handle().clone());
+
+            tauri::async_runtime::spawn(background_manager::background_worker());
 
             let app_title = MenuItem::with_id(app, "app_title", "Archway", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;

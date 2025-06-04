@@ -1,6 +1,7 @@
 use crate::structs::{DriveInfoFile, JobInfo};
 use std::fs;
 use std::path::Path;
+use sysinfo::Disks;
 
 pub fn get_drive_uuid(drive_name: &str) -> String {
     let uuid_drive = Path::new(drive_name);
@@ -99,4 +100,18 @@ pub fn get_root_drive(path: &str) -> Option<String> {
         }
     }
     None
+}
+
+pub fn get_all_drives() -> Vec<Vec<String>> {
+    let disks = Disks::new_with_refreshed_list();
+    let mut drive_list: Vec<Vec<String>> = Vec::new();
+
+    for disk in disks.list() {
+        drive_list.push(vec![
+            disk.mount_point().to_string_lossy().to_string(),
+            disk.name().to_string_lossy().to_string(),
+        ]);
+    }
+
+    return drive_list
 }
