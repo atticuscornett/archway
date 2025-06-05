@@ -39,13 +39,10 @@ declare module '$env/static/private' {
 	export const EDITOR: string;
 	export const EnableLog: string;
 	export const FIG_TERM: string;
-	export const FPS_BROWSER_APP_PROFILE_STRING: string;
-	export const FPS_BROWSER_USER_PROFILE_STRING: string;
 	export const HOME: string;
 	export const HOMEDRIVE: string;
 	export const HOMEPATH: string;
 	export const IGCCSVC_DB: string;
-	export const IJ_RESTARTER_LOG: string;
 	export const INIT_CWD: string;
 	export const INTELLIJ_TERMINAL_COMMAND_BLOCKS_REWORKED: string;
 	export const JETBRAINS_INTELLIJ_COMMAND_END_MARKER: string;
@@ -158,13 +155,10 @@ declare module '$env/dynamic/private' {
 		EDITOR: string;
 		EnableLog: string;
 		FIG_TERM: string;
-		FPS_BROWSER_APP_PROFILE_STRING: string;
-		FPS_BROWSER_USER_PROFILE_STRING: string;
 		HOME: string;
 		HOMEDRIVE: string;
 		HOMEPATH: string;
 		IGCCSVC_DB: string;
-		IJ_RESTARTER_LOG: string;
 		INIT_CWD: string;
 		INTELLIJ_TERMINAL_COMMAND_BLOCKS_REWORKED: string;
 		JETBRAINS_INTELLIJ_COMMAND_END_MARKER: string;
