@@ -120,11 +120,28 @@ pub async fn background_worker() {
                             }
                         }
                     }
+
+                    if trigger.clone().traits.event.unwrap() == "monthly" {
+                        let trigger_times = trigger.clone().traits.time.unwrap();
+                        let day_trigger = trigger_times.get(0).unwrap();
+                        let time_trigger = trigger_times.get(1);
+
+                        println!("Current weekday: {}, Trigger weekday: {:?}", current_weekday, &weekday_index[current_weekday as usize]);
+
+                        if day_trigger.parse::<u8>().unwrap() == current_day {
+                            if let Some(hour_str) = time_trigger {
+                                if hour_str == &times_index[current_hour as usize] && current_minute == 0 {
+                                    println!("Triggering monthly job: {}", job.clone().job_name);
+                                    job_manager::start_job(job.clone().uuid);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
 
-        std::thread::sleep(std::time::Duration::from_secs(15));
+        std::thread::sleep(std::time::Duration::from_secs(60));
     }
 }
