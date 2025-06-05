@@ -92,7 +92,17 @@ pub async fn background_worker() {
                         }
                     }
 
-
+                    if trigger.clone().traits.event.unwrap() == "daily" {
+                        let trigger_times = trigger.clone().traits.time.unwrap();
+                        let hour_trigger = trigger_times.get(0);
+                        if let Some(hour_str) = hour_trigger {
+                            if hour_str == &times_index[current_hour as usize] && current_minute == 0 {
+                                println!("Triggering daily job: {}", job.clone().job_name);
+                                job_manager::start_job(job.clone().uuid);
+                            }
+                        }
+                    }
+                    
                 }
             }
         }
