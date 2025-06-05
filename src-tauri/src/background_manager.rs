@@ -56,6 +56,7 @@ pub async fn background_worker() {
                     let required_drive = job.output_device.clone();
                     
                     for new_drive in &new_drives {
+                        let drive_uuid = get_drive_uuid(new_drive.get(0).unwrap());
                         
                         if drive_uuid == required_drive {
                             println!("Triggering job {} for new drive {}", job.clone().job_name, required_drive);
