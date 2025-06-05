@@ -76,6 +76,7 @@ pub async fn background_worker() {
         let all_jobs = storage_manager::get_all_jobs();
         let times_index = vec!["12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM", "8 AM", "9 AM", "10 AM", "11 AM",
                                "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM"];
+        let weekday_index = vec!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
         for job in all_jobs {
             for trigger in &job.triggers {
                 if trigger.clone().trigger_type == "time" {
@@ -102,12 +103,28 @@ pub async fn background_worker() {
                             }
                         }
                     }
-                    
+
+                    if trigger.clone().traits.event.unwrap() == "weekly" {
+                        let trigger_times = trigger.clone().traits.time.unwrap();
+                        let weekday_trigger = trigger_times.get(0).unwrap();
+                        let time_trigger = trigger_times.get(1);
+
+                        println!("Current weekday: {}, Trigger weekday: {:?}", current_weekday, &weekday_index[current_weekday as usize]);
+
+                        if weekday_trigger == &weekday_index[current_weekday as usize] {
+                            if let Some(hour_str) = time_trigger {
+                                if hour_str == &times_index[current_hour as usize] && current_minute == 0 {
+                                    println!("Triggering weekly job: {}", job.clone().job_name);
+                                    job_manager::start_job(job.clone().uuid);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
 
-        std::thread::sleep(std::time::Duration::from_secs(60));
+        std::thread::sleep(std::time::Duration::from_secs(15));
     }
 }
