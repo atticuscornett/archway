@@ -7,6 +7,7 @@
     import Dashboard from "../pages/Dashboard.svelte";
     import JobManager from "../pages/JobManager.svelte";
     import Status from "../pages/Status.svelte";
+    import Health from "../pages/Health.svelte";
 
     let name = $state("");
     let greetMsg = $state("");
@@ -37,6 +38,9 @@
     {/if}
     {#if page === "Status"}
         <Status bind:page></Status>
+    {/if}
+    {#if page === "Health"}
+        <Health bind:page></Health>
     {/if}
 
 <!--    <div class="row">-->

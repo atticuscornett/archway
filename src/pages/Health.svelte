@@ -1,18 +1,19 @@
 <script lang="ts">
-    import * as Card from "$lib/components/ui/card/index.js";
-    import {Button} from "$lib/components/ui/button/index.js";
-    import {ArrowRight, CircleCheck, CircleHelp, CircleX} from "@lucide/svelte";
-    import {onMount} from "svelte";
     import {toast} from "svelte-sonner";
 
     let {page = $bindable()} = $props();
+    import {onMount} from "svelte";
+    import {ArrowRight, CircleCheck, CircleHelp, CircleX, Home} from "@lucide/svelte";
+    import {Button} from "$lib/components/ui/button";
+    import * as Card from "$lib/components/ui/card/index.js";
 
     let health: Object = $state({});
     let healthDetails: string = $state("Loading job health...");
     let healthOverview: string = $state("unknown");
+    let allJobs: Object[] = $state([]);
 
     let loadHealth = async () => {
-        if (page !== "Dashboard") {
+        if (page !== "Health") {
             return;
         }
 
@@ -22,7 +23,8 @@
             toast.error("Something went wrong while loading job health.");
         }
 
-        let unknown_jobs = JSON.parse(await invoke("get_all_jobs")).length;
+        allJobs = JSON.parse(await invoke("get_all_jobs"));
+        let unknown_jobs = allJobs.length;
         console.log("Unknown jobs:", unknown_jobs);
         let healthy_jobs = 0;
         let unhealthy_jobs = 0;
@@ -51,10 +53,10 @@
     onMount(()=> {
         loadHealth();
     });
-
 </script>
-
-<Card.Root class="w-full h-full mb-4 relative pb-8">
+<h2 class="mb-5">Job Health</h2>
+<Button onclick={() => page = "Dashboard"} class="fixed top-10 right-10 z-50"><Home/> Back to Dashboard</Button>
+<Card.Root class="w-full h-full mb-4 relative">
     <Card.Content>
         <div class="inline-block align-top">
             {#if healthOverview === "unhealthy"}
@@ -73,8 +75,27 @@
             {:else}
                 <h2 class="text-green-400">All jobs are healthy!</h2>
             {/if}
-            <h3>{healthDetails}</h3>
+            <h3 class="mb-2">{healthDetails}</h3>
         </div>
     </Card.Content>
-    <Button onclick={()=>{page="Health";}} class="align-middle absolute bottom-4 right-4"><ArrowRight/></Button>
 </Card.Root>
+
+{#each allJobs as job}
+    <Card.Root class="relative mb-4">
+        <Card.Header>
+            <Card.Title>{job["job_name"]}</Card.Title>
+            <Card.Description>Job UUID: {job["uuid"]}</Card.Description>
+        </Card.Header>
+        <Card.Content>
+            {#if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] : "unknown" == "good"}
+                <CircleCheck class="align-bottom inline text-green-400"/>
+            {:else if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] : "unknown" == "bad"}
+                <CircleX class="align-bottom inline text-red-600"/>
+            {:else}
+                <CircleHelp class="align-bottom inline text-yellow-400"/>
+            {/if}
+
+            <p class="inline">Last Health Update: {health[job["uuid"]] ? health[job["uuid"]].split("/")[1] : "Job has never run."}</p>
+        </Card.Content>
+    </Card.Root>
+{/each}
