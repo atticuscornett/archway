@@ -1,7 +1,7 @@
 <script lang="ts">
     import * as Card from "$lib/components/ui/card/index.js";
     import {Button} from "$lib/components/ui/button/index.js";
-    import {ArrowRight, CircleCheck} from "@lucide/svelte";
+    import {ArrowRight, CircleCheck, CircleHelp, CircleX} from "@lucide/svelte";
     import {onMount} from "svelte";
     import {toast} from "svelte-sonner";
 
@@ -39,10 +39,10 @@
 
         if (unhealthy_jobs > 0) {
             healthOverview = "unhealthy";
-            healthDetails = `${unhealthy_jobs} job${unhealthy_jobs == 1 ? '' : 's'} unhealthy, ${healthy_jobs} job${healthy_jobs > 1 ? 's' : ''} healthy, ${unknown_jobs} job${unknown_jobs > 1 ? 's' : ''} unknown`;
+            healthDetails = `${unhealthy_jobs} job${unhealthy_jobs == 1 ? '' : 's'} unhealthy, ${healthy_jobs} job${healthy_jobs == 1 ? '' : 's'} healthy, ${unknown_jobs} job${unknown_jobs == 1 ? '' : 's'} unknown`;
         } else {
             healthOverview = "healthy";
-            healthDetails = `${healthy_jobs} job${healthy_jobs == 1 ? '' : 's'} healthy, ${unknown_jobs} job${unknown_jobs > 1 ? 's' : ''} unknown`;
+            healthDetails = `${healthy_jobs} job${healthy_jobs == 1 ? '' : 's'} healthy, ${unknown_jobs} job${unknown_jobs == 1 ? '' : 's'} unknown`;
         }
 
         setTimeout(loadHealth, 15000); // Refresh every 15 seconds
@@ -57,10 +57,22 @@
 <Card.Root class="w-full h-full mb-4 relative pb-8">
     <Card.Content>
         <div class="inline-block align-top">
-            <CircleCheck size={80} class="text-green-400"/>
+            {#if healthOverview === "unhealthy"}
+                <CircleX size={80} class="text-red-600"/>
+            {:else if healthOverview === "unknown"}
+                <CircleHelp size={80} class="text-yellow-400"/>
+            {:else}
+                <CircleCheck size={80} class="text-green-400"/>
+            {/if}
         </div>
         <div class="inline-block ml-4">
-            <h2>All jobs healthy.</h2>
+            {#if healthOverview === "unhealthy"}
+                <h2 class="text-red-600">Some jobs are unhealthy!</h2>
+            {:else if healthOverview === "unknown"}
+                <h2 class="text-yellow-400">Job health is unknown.</h2>
+            {:else}
+                <h2 class="text-green-400">All jobs are healthy!</h2>
+            {/if}
             <h3>{healthDetails}</h3>
         </div>
     </Card.Content>
