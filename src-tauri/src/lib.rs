@@ -4,6 +4,8 @@ mod storage_manager;
 mod structs;
 mod background_manager;
 
+use std::collections::HashMap;
+use std::hash::Hash;
 use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use crate::drive_manager::get_root_drive;
@@ -196,6 +198,11 @@ fn stop_job(uuid: String) {
     job_manager::set_job_update(uuid.clone(), "stop_requested".to_string());
 }
 
+#[tauri::command]
+fn get_all_job_health() -> HashMap<String, String> {
+    storage_manager::get_all_job_health()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -222,7 +229,8 @@ pub fn run() {
             pause_job,
             unpause_job,
             stop_job,
-            get_job_update
+            get_job_update,
+            get_all_job_health
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use

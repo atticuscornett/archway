@@ -1,3 +1,7 @@
+use std::collections::HashMap;
+use std::fmt::format;
+use std::hash::Hash;
+use std::ops::Add;
 use crate::structs::JobInfo;
 
 pub fn to_json_string<T: serde::Serialize>(data: &T) -> String {
@@ -76,4 +80,34 @@ pub fn remove_job_by_uuid(uuid: &str) -> bool {
         println!("Job with UUID {} not found", uuid);
         false
     }
+}
+
+pub fn get_all_job_health() -> HashMap<String, String> {
+    match read_json_file::<HashMap<String, String>>(file_with_executable("job_health.json")) {
+        Ok(health) => {
+            health
+        }
+        Err(err) => {
+            let blank_map: HashMap<String, String> = HashMap::new();
+            return blank_map;
+        }
+    }
+}
+
+pub fn set_all_job_health(health: HashMap<String, String>) -> bool {
+    write_json_file(file_with_executable("job_health.json"), &health).is_ok()
+}
+
+pub fn get_job_health_by_uuid(uuid: &str) -> String {
+    let health = get_all_job_health();
+    health.get(uuid).cloned().unwrap_or_else(|| "none".to_string())
+}
+
+pub fn set_job_health_by_uuid(uuid: &str, health: &str) -> bool {
+    let now = time::OffsetDateTime::now_utc();
+    let format_descriptor = time::format_description::parse("[year]-[month]-[day] [hour]:[minute]:[second]").unwrap();
+    let time_string = now.format(&format_descriptor).unwrap_or_else(|_| "unknown".to_string());
+    let mut all_health = get_all_job_health();
+    all_health.insert(uuid.to_string(), health.to_string().add("/").add(time_string.as_str()));
+    set_all_job_health(all_health)
 }

@@ -1,0 +1,68 @@
+<script lang="ts">
+    import * as Card from "$lib/components/ui/card/index.js";
+    import {Button} from "$lib/components/ui/button/index.js";
+    import {ArrowRight, CircleCheck} from "@lucide/svelte";
+    import {onMount} from "svelte";
+    import {toast} from "svelte-sonner";
+
+    let {page = $bindable()} = $props();
+
+    let health: Object = $state({});
+    let healthDetails: string = $state("Loading job health...");
+    let healthOverview: string = $state("unknown");
+
+    let loadHealth = async () => {
+        if (page !== "Dashboard") {
+            return;
+        }
+
+        try {
+            health = await invoke("get_all_job_health");
+        } catch (error) {
+            toast.error("Something went wrong while loading job health.");
+        }
+
+        let unknown_jobs = JSON.parse(await invoke("get_all_jobs")).length;
+        console.log("Unknown jobs:", unknown_jobs);
+        let healthy_jobs = 0;
+        let unhealthy_jobs = 0;
+        for (let job in health) {
+            if (health[job].includes("good")) {
+                healthy_jobs++;
+            }
+            if (health[job].includes("bad")) {
+                unhealthy_jobs++;
+            }
+        }
+
+        unknown_jobs -= (healthy_jobs + unhealthy_jobs);
+
+        if (unhealthy_jobs > 0) {
+            healthOverview = "unhealthy";
+            healthDetails = `${unhealthy_jobs} job${unhealthy_jobs == 1 ? '' : 's'} unhealthy, ${healthy_jobs} job${healthy_jobs > 1 ? 's' : ''} healthy, ${unknown_jobs} job${unknown_jobs > 1 ? 's' : ''} unknown`;
+        } else {
+            healthOverview = "healthy";
+            healthDetails = `${healthy_jobs} job${healthy_jobs == 1 ? '' : 's'} healthy, ${unknown_jobs} job${unknown_jobs > 1 ? 's' : ''} unknown`;
+        }
+
+        setTimeout(loadHealth, 15000); // Refresh every 15 seconds
+    };
+
+    onMount(()=> {
+        loadHealth();
+    });
+
+</script>
+
+<Card.Root class="w-full h-full mb-4 relative pb-8">
+    <Card.Content>
+        <div class="inline-block align-top">
+            <CircleCheck size={80} class="text-green-400"/>
+        </div>
+        <div class="inline-block ml-4">
+            <h2>All jobs healthy.</h2>
+            <h3>{healthDetails}</h3>
+        </div>
+    </Card.Content>
+    <Button onclick={()=>{page="JobManager";}} class="align-middle absolute bottom-4 right-4"><ArrowRight/></Button>
+</Card.Root>

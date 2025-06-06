@@ -10,6 +10,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 use tauri_plugin_notification::NotificationExt;
+use crate::storage_manager::set_job_health_by_uuid;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
@@ -883,6 +884,8 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
                 true,
                 1.0,
             );
+
+            set_job_health_by_uuid(uuid.as_str(), "good");
             get_app_handle()
                 .notification()
                 .builder()
@@ -973,6 +976,8 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
         1.0,
     );
 
+    set_job_health_by_uuid(uuid.as_str(), "good");
+
     get_app_handle()
         .notification()
         .builder()
@@ -983,6 +988,8 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
 }
 
 fn job_failed_notification(uuid: String) {
+    set_job_health_by_uuid(uuid.as_str(), "bad");
+
     let job_info = storage_manager::get_job_by_uuid(&uuid);
     get_app_handle()
         .notification()
