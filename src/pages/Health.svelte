@@ -76,6 +76,7 @@
                 <h2 class="text-green-400">All jobs are healthy!</h2>
             {/if}
             <h3 class="mb-2">{healthDetails}</h3>
+            <p>Health statuses are updated after each job run. If a job has never run, it will show as "unknown".</p>
         </div>
     </Card.Content>
 </Card.Root>
@@ -87,9 +88,9 @@
             <Card.Description>Job UUID: {job["uuid"]}</Card.Description>
         </Card.Header>
         <Card.Content>
-            {#if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] : "unknown" == "good"}
+            {#if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] == "good": "unknown"}
                 <CircleCheck class="align-bottom inline text-green-400"/>
-            {:else if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] : "unknown" == "bad"}
+            {:else if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] == "bad": "unknown"}
                 <CircleX class="align-bottom inline text-red-600"/>
             {:else}
                 <CircleHelp class="align-bottom inline text-yellow-400"/>

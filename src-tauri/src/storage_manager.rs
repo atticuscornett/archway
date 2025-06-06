@@ -104,9 +104,9 @@ pub fn get_job_health_by_uuid(uuid: &str) -> String {
 }
 
 pub fn set_job_health_by_uuid(uuid: &str, health: &str) -> bool {
-    let now = time::OffsetDateTime::now_utc();
+    let now = time::OffsetDateTime::now_local();
     let format_descriptor = time::format_description::parse("[year]-[month]-[day] [hour]:[minute]:[second]").unwrap();
-    let time_string = now.format(&format_descriptor).unwrap_or_else(|_| "unknown".to_string());
+    let time_string = now.unwrap().format(&format_descriptor).unwrap_or_else(|_| "unknown".to_string());
     let mut all_health = get_all_job_health();
     all_health.insert(uuid.to_string(), health.to_string().add("/").add(time_string.as_str()));
     set_all_job_health(all_health)
