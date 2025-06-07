@@ -261,7 +261,7 @@ async fn job_stage_one(uuid: String) {
         false,
         -1.0,
     );
-    job_log(uuid.clone().as_str(), "Job stage one started. (Indexing Files)", "STEP", log_level.clone());
+    job_log(uuid.clone().as_str(), "Job stage one started. (Indexing files)", "STEP", log_level.clone());
 
     let input_dirs = storage_manager::get_job_by_uuid(&uuid).input_dirs;
     let mut all_folders: Vec<String> = Vec::new();
@@ -423,6 +423,7 @@ async fn job_stage_one(uuid: String) {
 
 // Stage two of the job: Initializing directories
 async fn job_stage_two(uuid: String, files: Vec<String>) {
+    let log_level = settings_manager::get_settings().log_level.unwrap();
     update_job_status(
         uuid.as_str(),
         2,
@@ -432,6 +433,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         false,
         -1.0,
     );
+    job_log(uuid.clone().as_str(), "Job stage two has started. (Initializing output directory heirarchy) ", "STEP", log_level.clone());
 
     let job_info = storage_manager::get_job_by_uuid(&uuid);
 
@@ -446,6 +448,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
 
     if !std::path::Path::new(&drive).exists() {
         println!("Drive does not exist: {}", drive);
+        job_log(uuid.clone().as_str(), &format!("Job failed. Drive does not exist: '{}'. This error is often caused by the drive being disconnected.", drive), "ERROR", log_level.clone());
         update_job_status(
             uuid.as_str(),
             2,
@@ -478,8 +481,10 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         if drive_uuid != output_device {
             println!(
                 "Drive UUID does not match job output device: {} != {}",
-                drive_uuid, output_device
+                drive_uuid.clone(), output_device.clone()
             );
+
+            job_log(uuid.clone().as_str(), &format!("Job failed. Drive UUID does not match Job Output UUID: {} != {}. This is usually caused by a different drive being connected with the same mount point (drive letter) as the output device.", drive_uuid.clone(), output_device.clone()), "ERROR", log_level.clone());
             update_job_status(
                 uuid.as_str(),
                 2,
@@ -501,6 +506,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
             match std::fs::create_dir_all(&output_dir) {
                 Ok(_) => println!("Created output directory: {}", output_dir),
                 Err(e) => {
+                    job_log(uuid.clone().as_str(), &format!("Job failed. Failed to create output directory: {}", output_dir), "ERROR", log_level.clone());
                     println!("Failed to create output directory: {}", e);
                     update_job_status(
                         uuid.as_str(),
@@ -610,6 +616,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         match std::fs::create_dir_all(&output_dir) {
             Ok(_) => println!("Created output directory: {}", output_dir),
             Err(e) => {
+                job_log(uuid.clone().as_str(), &format!("Job failed. Failed to create output directory: '{}'.", output_dir.clone()), "ERROR", log_level.clone());
                 println!("Failed to create output directory: {}", e);
                 update_job_status(
                     uuid.as_str(),

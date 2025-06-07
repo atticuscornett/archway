@@ -22,7 +22,7 @@ fn fill_default_settings(settings: &mut SettingsJSON)  {
 }
 
 pub fn get_settings() -> SettingsJSON {
-    let mut settings = read_json_file::<SettingsJSON>(file_with_executable("archway-settings.json")).unwrap_or_else(|_| {
+    let mut settings = read_json_file::<SettingsJSON>(file_with_executable("archway_settings.json")).unwrap_or_else(|_| {
         let mut default_settings = SettingsJSON {
             run_on_startup: None,
             log_level: None
