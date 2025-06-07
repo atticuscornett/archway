@@ -433,7 +433,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         false,
         -1.0,
     );
-    job_log(uuid.clone().as_str(), "Job stage two has started. (Initializing output directory heirarchy) ", "STEP", log_level.clone());
+    job_log(uuid.clone().as_str(), "Job stage two has started. (Initializing output directory hierarchy) ", "STEP", log_level.clone());
 
     let job_info = storage_manager::get_job_by_uuid(&uuid);
 
