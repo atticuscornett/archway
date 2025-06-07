@@ -3,6 +3,7 @@ mod job_manager;
 mod storage_manager;
 mod structs;
 mod background_manager;
+mod settings_manager;
 
 use std::collections::HashMap;
 use std::hash::Hash;
