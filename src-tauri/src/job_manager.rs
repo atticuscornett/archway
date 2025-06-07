@@ -640,6 +640,7 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
 
 // Stage three of the job: Copying files
 async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) {
+    let log_level = settings_manager::get_settings().log_level.unwrap();
     let total_files = files.len() as u32;
     let mut output_paths: Vec<String> = Vec::new();
     let mut processed_files = 0;
@@ -653,6 +654,8 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
         false,
         0.0,
     );
+
+    job_log(uuid.clone().as_str(), "Job stage three has started. (Copying files)", "STEP", log_level.clone());
 
     println!("Output directory: {}", output_dir.display());
 
@@ -704,6 +707,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                 total_files
             ),
         );
+        job_log(uuid.clone().as_str(), &format!("Copying file: {}", file_path_str), "FILE", log_level.clone());
 
         // Remove the input directory from the file path so the directory structure is preserved
         let longest_matching_dir = input_dirs_cleaned
@@ -753,6 +757,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                         true,
                         0.0,
                     );
+                    job_log(uuid.clone().as_str(), &format!("Job failed. Failed to create output directory: {}", output_file_parent.as_ref().unwrap().display()), "ERROR", log_level.clone());
                     set_job_update(uuid.clone(), "not_running".to_string());
                     job_failed_notification(job_info.uuid);
 
@@ -787,6 +792,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                     true,
                     0.0,
                 );
+                job_log(uuid.clone().as_str(), &format!("Job failed. Failed to copy file: {}", file), "ERROR", log_level.clone());
                 set_job_update(uuid.clone(), "not_running".to_string());
                 job_failed_notification(job_info.uuid);
 
