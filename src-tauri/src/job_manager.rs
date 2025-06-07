@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::format;
 use crate::structs::{JobInfo, JobStatus};
 use crate::{drive_manager, settings_manager, storage_manager};
 use once_cell::sync::{Lazy, OnceCell};
@@ -108,7 +109,7 @@ pub fn start_job(uuid: String) -> bool {
         .unwrap();
 
     let log_level = settings_manager::get_settings().log_level.unwrap();
-    job_log(uuid.clone().as_str(), "Job started successfully.", "START", log_level);
+    job_log(uuid.clone().as_str(), "Job started successfully.", "START", log_level.clone());
 
     // Return true to indicate the job has started successfully
     true
@@ -250,6 +251,7 @@ fn compare_files(file1: &str, file2: &str) -> std::io::Result<bool> {
 
 // Stage one of the job: Indexing files to move
 async fn job_stage_one(uuid: String) {
+    let log_level = settings_manager::get_settings().log_level.unwrap();
     update_job_status(
         uuid.as_str(),
         1,
@@ -259,6 +261,7 @@ async fn job_stage_one(uuid: String) {
         false,
         -1.0,
     );
+    job_log(uuid.clone().as_str(), "Job stage one started. (Indexing Files)", "STEP", log_level.clone());
 
     let input_dirs = storage_manager::get_job_by_uuid(&uuid).input_dirs;
     let mut all_folders: Vec<String> = Vec::new();
@@ -292,6 +295,7 @@ async fn job_stage_one(uuid: String) {
         all_folders.extend(get_all_subfolders(&input_dir.path));
     }
 
+    job_log(uuid.clone().as_str(), "Indexing all files and folders", "STEP", log_level.clone());
     update_last_action(uuid.as_str(), String::from("Getting all files..."));
     update_job_progress(uuid.as_str(), 0.33);
     let mut all_files: Vec<String> = Vec::new();
@@ -300,11 +304,13 @@ async fn job_stage_one(uuid: String) {
         all_files.extend(get_all_files(input_dir.as_str()));
     }
 
+    job_log(uuid.clone().as_str(), "Applying filters to indexed files", "STEP", log_level.clone());
     update_last_action(uuid.as_str(), String::from("Applying filters..."));
     update_job_progress(uuid.as_str(), 0.66);
     let filters = storage_manager::get_job_by_uuid(&uuid).file_filters;
     // Apply filters to the files
     for filter in filters {
+        job_log(uuid.clone().as_str(), &format!("Applying filter: {}", filter.clone().filter_type), "FILE", log_level.clone());
         // Apply extension filter
         if filter.filter_type == "extension" {
             let mut allowed_extensions = filter.traits.extensions.unwrap();
