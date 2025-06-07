@@ -31,12 +31,16 @@ pub fn log_error(log_title: &str, body: &str) {
 pub fn job_log(job_id: &str, body: &str, msg_type: &str, log_setting: String) {
     let log_title = "job-".to_owned() + job_id;
     let log_title_str = log_title.as_str();
-    if (msg_type == "FILE" && log_setting == "high") {
-        log(log_title_str, body, "INFO");
+    if (msg_type == "FILE") {
+        if (log_setting == "high"){
+            log(log_title_str, body, "INFO");
+        }
         return;
     }
-    if (msg_type == "STEP" && log_setting != "low") {
-        log(log_title_str, body, "INFO");
+    if (msg_type == "STEP") {
+        if (log_setting != "low") {
+            log(log_title_str, body, "INFO");
+        }
         return;
     }
     if (msg_type == "ERROR") {

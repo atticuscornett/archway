@@ -28,9 +28,11 @@ pub fn get_settings() -> SettingsJSON {
             log_level: None
         };
         fill_default_settings(&mut default_settings);
+        println!("Settings file not found or invalid, using default settings: {:?}", default_settings);
         default_settings
     });
 
+    println!("{:?}", settings);
     fill_default_settings(&mut settings);
 
     settings
