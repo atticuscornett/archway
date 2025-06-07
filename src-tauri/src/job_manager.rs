@@ -805,6 +805,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
 
 // Stage four of the job: Verifying files
 async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Vec<String>) {
+    let log_level = settings_manager::get_settings().log_level.unwrap();
     update_job_status(
         uuid.as_str(),
         4,
@@ -815,6 +816,8 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
         0.0,
     );
 
+    job_log(uuid.clone().as_str(), "Job stage four has started. (Verifying files)", "STEP", log_level.clone());
+
     // Ensure input and output files match
     if input_files.len() != output_files.len() {
         println!(
@@ -822,6 +825,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             input_files.len(),
             output_files.len()
         );
+        job_log(uuid.clone().as_str(), "Job failed. Input and output files do not match, so file verification could not continue.", "ERROR", log_level.clone());
         update_job_status(
             uuid.as_str(),
             4,
@@ -855,8 +859,10 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
         );
         let input_file_path = PathBuf::from(input_file);
         let output_file_path = PathBuf::from(output_file);
+        job_log(uuid.clone().as_str(), &format!("Verifying files: '{}' and '{}'", input_file.clone(), output_file.clone()), "FILE", log_level.clone());
 
         if !output_file_path.exists() {
+            job_log(uuid.clone().as_str(), &format!("File failed verification - output file does not exist: {}", output_file.clone()), "FILE", log_level.clone());
             println!("Output file does not exist: {}", output_file);
             failed_files.push(output_file.clone());
             continue;
@@ -867,6 +873,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             output_file_path.to_str().unwrap(),
         ) {
             Ok(true) => {
+                job_log(uuid.clone().as_str(), "Verified. ", "FILE", log_level.clone());
                 verified_files += 1;
                 let percent = verified_files as f32 / total_files as f32;
                 update_job_progress(uuid.as_str(), percent);
@@ -880,9 +887,12 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             }
             Ok(false) => {
                 println!("File verification failed for: {}", output_file);
+                job_log(uuid.clone().as_str(), &format!("Files do not match."), "ERROR", log_level.clone());
+
                 failed_files.push(output_file.clone());
             }
             Err(e) => {
+                job_log(uuid.clone().as_str(), "Error comparing. ", "ERROR", log_level.clone());
                 println!("Error comparing files: {}", e);
                 failed_files.push(output_file.clone());
             }
@@ -907,6 +917,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
                 true,
                 1.0,
             );
+            job_log(uuid.clone().as_str(), "Job completed successfully.", "STOP", log_level.clone());
 
             set_job_health_by_uuid(uuid.as_str(), "good");
             get_app_handle()
@@ -930,6 +941,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             true,
             0.0,
         );
+        job_log(uuid.clone().as_str(), &format!("Job failed. Some files failed verification: {:?}", failed_files), "ERROR", log_level.clone());
 
         set_job_update(uuid.clone(), "not_running".to_string());
         job_failed_notification(uuid);
