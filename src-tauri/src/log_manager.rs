@@ -28,7 +28,7 @@ pub fn log_error(log_title: &str, body: &str) {
     log(log_title, body, "ERROR");
 }
 
-pub fn job_log(job_id: &str, body: &str, msg_type: &str, log_setting: &str) {
+pub fn job_log(job_id: &str, body: &str, msg_type: &str, log_setting: String) {
     let log_title = "job-".to_owned() + job_id;
     let log_title_str = log_title.as_str();
     if (msg_type == "FILE" && log_setting == "high") {

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::structs::{JobInfo, JobStatus};
-use crate::{drive_manager, storage_manager};
+use crate::{drive_manager, settings_manager, storage_manager};
 use once_cell::sync::{Lazy, OnceCell};
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -10,6 +10,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 use tauri_plugin_notification::NotificationExt;
+use crate::log_manager::job_log;
 use crate::storage_manager::set_job_health_by_uuid;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
@@ -96,7 +97,7 @@ pub fn start_job(uuid: String) -> bool {
     JOB_STATUSES.lock().unwrap().push(new_job_status);
     set_job_update(uuid.clone(), "running".to_string());
 
-    tauri::async_runtime::spawn(job_stage_one(uuid));
+    tauri::async_runtime::spawn(job_stage_one(uuid.clone()));
 
     get_app_handle()
         .notification()
@@ -105,6 +106,9 @@ pub fn start_job(uuid: String) -> bool {
         .body("The job has been started successfully.")
         .show()
         .unwrap();
+
+    let log_level = settings_manager::get_settings().log_level.unwrap();
+    job_log(uuid.clone().as_str(), "Job started successfully.", "START", log_level);
 
     // Return true to indicate the job has started successfully
     true
