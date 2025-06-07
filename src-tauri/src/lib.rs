@@ -4,6 +4,7 @@ mod storage_manager;
 mod structs;
 mod background_manager;
 mod settings_manager;
+mod log_manager;
 
 use std::collections::HashMap;
 use std::hash::Hash;
