@@ -950,6 +950,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
 
 // Stage five of the job: Deleting original files (if moving files)
 async fn job_stage_five(uuid: String, input_files: Vec<String>) {
+    let log_level = settings_manager::get_settings().log_level.unwrap();
     update_job_status(
         uuid.as_str(),
         5,
@@ -1010,6 +1011,7 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
         true,
         1.0,
     );
+    job_log(uuid.clone().as_str(), "Job completed successfully. All original files deleted.", "STOP", log_level.clone());
 
     set_job_health_by_uuid(uuid.as_str(), "good");
 
