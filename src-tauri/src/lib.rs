@@ -335,6 +335,12 @@ pub fn run() {
             });
 
             tray.build(app)?;
+
+            // Hide main window on startup
+            let main_window = app.get_webview_window("main").expect("no main window");
+            if (settings.run_on_startup.unwrap_or(true)) {
+                main_window.hide().unwrap();
+            }
             Ok(())
         })
         .on_window_event(|window, event| match event {
