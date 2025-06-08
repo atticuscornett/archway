@@ -2,7 +2,8 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 
 pub fn log(log: &str, body: &str, msg_type: &str) {
-    let log_file_path = crate::storage_manager::file_with_executable(&*("archway-".to_owned() + log + ".log"));
+    let log_file_path =
+        crate::storage_manager::file_with_executable(&*("archway-".to_owned() + log + ".log"));
     let local_time = time::OffsetDateTime::now_local()
         .unwrap_or_else(|_| time::OffsetDateTime::now_utc())
         .format(&time::format_description::well_known::Rfc3339)
@@ -32,7 +33,7 @@ pub fn job_log(job_id: &str, body: &str, msg_type: &str, log_setting: String) {
     let log_title = "job-".to_owned() + job_id;
     let log_title_str = log_title.as_str();
     if msg_type == "FILE" {
-        if log_setting == "high"{
+        if log_setting == "high" {
             log_info(log_title_str, body);
         }
         return;
@@ -46,8 +47,7 @@ pub fn job_log(job_id: &str, body: &str, msg_type: &str, log_setting: String) {
     if msg_type == "ERROR" {
         log_error(log_title_str, body);
         return;
-    }
-    else {
+    } else {
         log_info(log_title_str, body);
     }
 }

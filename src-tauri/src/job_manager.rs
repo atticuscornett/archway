@@ -1,8 +1,10 @@
-use std::collections::HashMap;
-use crate::structs::{JobStatus};
+use crate::log_manager::job_log;
+use crate::storage_manager::set_job_health_by_uuid;
+use crate::structs::JobStatus;
 use crate::{drive_manager, settings_manager, storage_manager};
 use once_cell::sync::{Lazy, OnceCell};
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -10,8 +12,6 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 use tauri_plugin_notification::NotificationExt;
-use crate::log_manager::job_log;
-use crate::storage_manager::set_job_health_by_uuid;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
@@ -108,7 +108,12 @@ pub fn start_job(uuid: String) -> bool {
         .unwrap();
 
     let log_level = settings_manager::get_settings().log_level.unwrap();
-    job_log(uuid.clone().as_str(), "Job started successfully.", "START", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Job started successfully.",
+        "START",
+        log_level.clone(),
+    );
 
     // Return true to indicate the job has started successfully
     true
@@ -260,7 +265,12 @@ async fn job_stage_one(uuid: String) {
         false,
         -1.0,
     );
-    job_log(uuid.clone().as_str(), "Job stage one started. (Indexing files)", "STEP", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Job stage one started. (Indexing files)",
+        "STEP",
+        log_level.clone(),
+    );
 
     let input_dirs = storage_manager::get_job_by_uuid(&uuid).input_dirs;
     let mut all_folders: Vec<String> = Vec::new();
@@ -294,7 +304,12 @@ async fn job_stage_one(uuid: String) {
         all_folders.extend(get_all_subfolders(&input_dir.path));
     }
 
-    job_log(uuid.clone().as_str(), "Indexing all files and folders", "STEP", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Indexing all files and folders",
+        "STEP",
+        log_level.clone(),
+    );
     update_last_action(uuid.as_str(), String::from("Getting all files..."));
     update_job_progress(uuid.as_str(), 0.33);
     let mut all_files: Vec<String> = Vec::new();
@@ -303,13 +318,23 @@ async fn job_stage_one(uuid: String) {
         all_files.extend(get_all_files(input_dir.as_str()));
     }
 
-    job_log(uuid.clone().as_str(), "Applying filters to indexed files", "STEP", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Applying filters to indexed files",
+        "STEP",
+        log_level.clone(),
+    );
     update_last_action(uuid.as_str(), String::from("Applying filters..."));
     update_job_progress(uuid.as_str(), 0.66);
     let filters = storage_manager::get_job_by_uuid(&uuid).file_filters;
     // Apply filters to the files
     for filter in filters {
-        job_log(uuid.clone().as_str(), &format!("Applying filter: {}", filter.clone().filter_type), "FILE", log_level.clone());
+        job_log(
+            uuid.clone().as_str(),
+            &format!("Applying filter: {}", filter.clone().filter_type),
+            "FILE",
+            log_level.clone(),
+        );
         // Apply extension filter
         if filter.filter_type == "extension" {
             let mut allowed_extensions = filter.traits.extensions.unwrap();
@@ -409,7 +434,7 @@ async fn job_stage_one(uuid: String) {
                 }
             });
         }
-        if handle_pause_stop(uuid.clone()){
+        if handle_pause_stop(uuid.clone()) {
             return;
         }
     }
@@ -432,7 +457,12 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         false,
         -1.0,
     );
-    job_log(uuid.clone().as_str(), "Job stage two has started. (Initializing output directory hierarchy) ", "STEP", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Job stage two has started. (Initializing output directory hierarchy) ",
+        "STEP",
+        log_level.clone(),
+    );
 
     let job_info = storage_manager::get_job_by_uuid(&uuid);
 
@@ -480,7 +510,8 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         if drive_uuid != output_device {
             println!(
                 "Drive UUID does not match job output device: {} != {}",
-                drive_uuid.clone(), output_device.clone()
+                drive_uuid.clone(),
+                output_device.clone()
             );
 
             job_log(uuid.clone().as_str(), &format!("Job failed. Drive UUID does not match Job Output UUID: {} != {}. This is usually caused by a different drive being connected with the same mount point (drive letter) as the output device.", drive_uuid.clone(), output_device.clone()), "ERROR", log_level.clone());
@@ -505,7 +536,15 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
             match std::fs::create_dir_all(&output_dir) {
                 Ok(_) => println!("Created output directory: {}", output_dir),
                 Err(e) => {
-                    job_log(uuid.clone().as_str(), &format!("Job failed. Failed to create output directory: {}", output_dir), "ERROR", log_level.clone());
+                    job_log(
+                        uuid.clone().as_str(),
+                        &format!(
+                            "Job failed. Failed to create output directory: {}",
+                            output_dir
+                        ),
+                        "ERROR",
+                        log_level.clone(),
+                    );
                     println!("Failed to create output directory: {}", e);
                     update_job_status(
                         uuid.as_str(),
@@ -615,7 +654,15 @@ async fn job_stage_two(uuid: String, files: Vec<String>) {
         match std::fs::create_dir_all(&output_dir) {
             Ok(_) => println!("Created output directory: {}", output_dir),
             Err(e) => {
-                job_log(uuid.clone().as_str(), &format!("Job failed. Failed to create output directory: '{}'.", output_dir.clone()), "ERROR", log_level.clone());
+                job_log(
+                    uuid.clone().as_str(),
+                    &format!(
+                        "Job failed. Failed to create output directory: '{}'.",
+                        output_dir.clone()
+                    ),
+                    "ERROR",
+                    log_level.clone(),
+                );
                 println!("Failed to create output directory: {}", e);
                 update_job_status(
                     uuid.as_str(),
@@ -654,7 +701,12 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
         0.0,
     );
 
-    job_log(uuid.clone().as_str(), "Job stage three has started. (Copying files)", "STEP", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Job stage three has started. (Copying files)",
+        "STEP",
+        log_level.clone(),
+    );
 
     println!("Output directory: {}", output_dir.display());
 
@@ -691,7 +743,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
     }
 
     for file in &files {
-        if handle_pause_stop(uuid.clone()){
+        if handle_pause_stop(uuid.clone()) {
             return;
         }
 
@@ -706,7 +758,12 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                 total_files
             ),
         );
-        job_log(uuid.clone().as_str(), &format!("Copying file: {}", file_path_str), "FILE", log_level.clone());
+        job_log(
+            uuid.clone().as_str(),
+            &format!("Copying file: {}", file_path_str),
+            "FILE",
+            log_level.clone(),
+        );
 
         // Remove the input directory from the file path so the directory structure is preserved
         let longest_matching_dir = input_dirs_cleaned
@@ -756,7 +813,15 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                         true,
                         0.0,
                     );
-                    job_log(uuid.clone().as_str(), &format!("Job failed. Failed to create output directory: {}", output_file_parent.as_ref().unwrap().display()), "ERROR", log_level.clone());
+                    job_log(
+                        uuid.clone().as_str(),
+                        &format!(
+                            "Job failed. Failed to create output directory: {}",
+                            output_file_parent.as_ref().unwrap().display()
+                        ),
+                        "ERROR",
+                        log_level.clone(),
+                    );
                     set_job_update(uuid.clone(), "not_running".to_string());
                     job_failed_notification(job_info.uuid);
 
@@ -791,7 +856,12 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
                     true,
                     0.0,
                 );
-                job_log(uuid.clone().as_str(), &format!("Job failed. Failed to copy file: {}", file), "ERROR", log_level.clone());
+                job_log(
+                    uuid.clone().as_str(),
+                    &format!("Job failed. Failed to copy file: {}", file),
+                    "ERROR",
+                    log_level.clone(),
+                );
                 set_job_update(uuid.clone(), "not_running".to_string());
                 job_failed_notification(job_info.uuid);
 
@@ -815,7 +885,12 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
         0.0,
     );
 
-    job_log(uuid.clone().as_str(), "Job stage four has started. (Verifying files)", "STEP", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Job stage four has started. (Verifying files)",
+        "STEP",
+        log_level.clone(),
+    );
 
     // Ensure input and output files match
     if input_files.len() != output_files.len() {
@@ -846,7 +921,7 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
 
     // Iterate through input and output files to verify the hashes match
     for (input_file, output_file) in input_files.iter().zip(output_files.iter()) {
-        if handle_pause_stop(uuid.clone()){
+        if handle_pause_stop(uuid.clone()) {
             return;
         }
         update_last_action(
@@ -858,10 +933,27 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
         );
         let input_file_path = PathBuf::from(input_file);
         let output_file_path = PathBuf::from(output_file);
-        job_log(uuid.clone().as_str(), &format!("Verifying files: '{}' and '{}'", input_file.clone(), output_file.clone()), "FILE", log_level.clone());
+        job_log(
+            uuid.clone().as_str(),
+            &format!(
+                "Verifying files: '{}' and '{}'",
+                input_file.clone(),
+                output_file.clone()
+            ),
+            "FILE",
+            log_level.clone(),
+        );
 
         if !output_file_path.exists() {
-            job_log(uuid.clone().as_str(), &format!("File failed verification - output file does not exist: {}", output_file.clone()), "FILE", log_level.clone());
+            job_log(
+                uuid.clone().as_str(),
+                &format!(
+                    "File failed verification - output file does not exist: {}",
+                    output_file.clone()
+                ),
+                "FILE",
+                log_level.clone(),
+            );
             println!("Output file does not exist: {}", output_file);
             failed_files.push(output_file.clone());
             continue;
@@ -872,7 +964,12 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             output_file_path.to_str().unwrap(),
         ) {
             Ok(true) => {
-                job_log(uuid.clone().as_str(), "Verified. ", "FILE", log_level.clone());
+                job_log(
+                    uuid.clone().as_str(),
+                    "Verified. ",
+                    "FILE",
+                    log_level.clone(),
+                );
                 verified_files += 1;
                 let percent = verified_files as f32 / total_files as f32;
                 update_job_progress(uuid.as_str(), percent);
@@ -886,12 +983,22 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             }
             Ok(false) => {
                 println!("File verification failed for: {}", output_file);
-                job_log(uuid.clone().as_str(), &format!("Files do not match."), "ERROR", log_level.clone());
+                job_log(
+                    uuid.clone().as_str(),
+                    &format!("Files do not match."),
+                    "ERROR",
+                    log_level.clone(),
+                );
 
                 failed_files.push(output_file.clone());
             }
             Err(e) => {
-                job_log(uuid.clone().as_str(), "Error comparing. ", "ERROR", log_level.clone());
+                job_log(
+                    uuid.clone().as_str(),
+                    "Error comparing. ",
+                    "ERROR",
+                    log_level.clone(),
+                );
                 println!("Error comparing files: {}", e);
                 failed_files.push(output_file.clone());
             }
@@ -916,7 +1023,12 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
                 true,
                 1.0,
             );
-            job_log(uuid.clone().as_str(), "Job completed successfully.", "STOP", log_level.clone());
+            job_log(
+                uuid.clone().as_str(),
+                "Job completed successfully.",
+                "STOP",
+                log_level.clone(),
+            );
 
             set_job_health_by_uuid(uuid.as_str(), "good");
             get_app_handle()
@@ -940,7 +1052,15 @@ async fn job_stage_four(uuid: String, input_files: Vec<String>, output_files: Ve
             true,
             0.0,
         );
-        job_log(uuid.clone().as_str(), &format!("Job failed. Some files failed verification: {:?}", failed_files), "ERROR", log_level.clone());
+        job_log(
+            uuid.clone().as_str(),
+            &format!(
+                "Job failed. Some files failed verification: {:?}",
+                failed_files
+            ),
+            "ERROR",
+            log_level.clone(),
+        );
 
         set_job_update(uuid.clone(), "not_running".to_string());
         job_failed_notification(uuid);
@@ -979,7 +1099,7 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
     let mut deleted_files = 0;
 
     for file in input_files {
-        if handle_pause_stop(uuid.clone()){
+        if handle_pause_stop(uuid.clone()) {
             return;
         }
         update_last_action(
@@ -1010,7 +1130,12 @@ async fn job_stage_five(uuid: String, input_files: Vec<String>) {
         true,
         1.0,
     );
-    job_log(uuid.clone().as_str(), "Job completed successfully. All original files deleted.", "STOP", log_level.clone());
+    job_log(
+        uuid.clone().as_str(),
+        "Job completed successfully. All original files deleted.",
+        "STOP",
+        log_level.clone(),
+    );
 
     set_job_health_by_uuid(uuid.as_str(), "good");
 

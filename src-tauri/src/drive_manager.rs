@@ -113,5 +113,5 @@ pub fn get_all_drives() -> Vec<Vec<String>> {
         ]);
     }
 
-    return drive_list
+    return drive_list;
 }

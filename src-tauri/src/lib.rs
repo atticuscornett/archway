@@ -1,25 +1,26 @@
+mod background_manager;
 mod drive_manager;
 mod job_manager;
+mod log_manager;
+mod settings_manager;
 mod storage_manager;
 mod structs;
-mod background_manager;
-mod settings_manager;
-mod log_manager;
 
+use serde_json;
 use std::collections::HashMap;
 use std::hash::Hash;
-use serde_json;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use crate::drive_manager::get_root_drive;
+use crate::job_manager::get_app_handle;
+use crate::settings_manager::SettingsJSON;
 use once_cell::sync::OnceCell;
 use std::sync::Mutex;
 use sysinfo::Disks;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager};
+use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_notification::NotificationExt;
-use crate::job_manager::get_app_handle;
-use crate::settings_manager::SettingsJSON;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 
@@ -220,6 +221,7 @@ fn set_settings(settings: SettingsJSON) -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![])))
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cws| {
             let main_window = app.get_webview_window("main").expect("no main window");
             main_window.show().unwrap();
