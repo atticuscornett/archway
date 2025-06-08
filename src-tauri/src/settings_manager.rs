@@ -44,7 +44,7 @@ pub fn set_settings(settings: &SettingsJSON) -> bool {
 
     match serde_json::to_string(&settings_to_save) {
         Ok(json_string) => {
-            std::fs::write(file_with_executable("archway-settings.json"), json_string).is_ok()
+            std::fs::write(file_with_executable("archway_settings.json"), json_string).is_ok()
         },
         Err(err) => {
             println!("Error serializing settings to JSON: {}", err);

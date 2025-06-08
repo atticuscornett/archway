@@ -213,6 +213,7 @@ fn get_settings() -> SettingsJSON {
 
 #[tauri::command]
 fn set_settings(settings: SettingsJSON) -> bool {
+    println!("Setting settings: {:?}", settings);
     settings_manager::set_settings(&settings)
 }
 
