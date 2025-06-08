@@ -75,10 +75,17 @@
 {/if}
 
 {#if step > 0}
-    <Button variant="secondary" class="fixed bottom-4 left-4" onclick={prevStep}><ChevronLeft/> Back</Button>
+    <Button variant="secondary" class="fixed bottom-4 left-4" onclick={prevStep} disabled={step === 5}><ChevronLeft/> Back</Button>
 {:else}
     <Button variant="secondary" class="fixed bottom-4 left-4" onclick={()=>{page="Dashboard";}}><Home/> Go to Dashboard</Button>
 {/if}
-<Button class="fixed bottom-4 right-4" onclick={nextStep} disabled={!canContinue}>
-    {(step === 4) ? "Finish" : "Next" } <ChevronRight/>
+<Button class="fixed bottom-4 right-4" onclick={nextStep} disabled={(!canContinue || step === 5)}>
+    {#if step <= 3}
+        Next
+    {:else if step === 4}
+        Finish
+    {:else}
+        Creating Job...
+    {/if}
+    <ChevronRight/>
 </Button>
