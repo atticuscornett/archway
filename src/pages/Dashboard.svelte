@@ -3,6 +3,7 @@
     import JobListTile from "../components/Dashboard/JobListTile.svelte";
     import StatusTile from "../components/Dashboard/StatusTile.svelte";
     import HealthTile from "../components/Dashboard/HealthTile.svelte";
+    import SettingsTile from "../components/Dashboard/SettingsTile.svelte";
 
     let {page = $bindable()} = $props();
 </script>
@@ -11,3 +12,4 @@
 <HealthTile bind:page/>
 <JobListTile bind:page/>
 <StatusTile bind:page/>
+<SettingsTile bind:page/>

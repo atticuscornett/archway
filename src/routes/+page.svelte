@@ -8,6 +8,7 @@
     import JobManager from "../pages/JobManager.svelte";
     import Status from "../pages/Status.svelte";
     import Health from "../pages/Health.svelte";
+    import Settings from "../pages/Settings.svelte";
 
     let name = $state("");
     let greetMsg = $state("");
@@ -41,6 +42,9 @@
     {/if}
     {#if page === "Health"}
         <Health bind:page></Health>
+    {/if}
+    {#if page === "Settings"}
+        <Settings bind:page></Settings>
     {/if}
 
 <!--    <div class="row">-->

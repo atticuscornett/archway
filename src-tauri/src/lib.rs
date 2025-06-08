@@ -19,6 +19,7 @@ use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_notification::NotificationExt;
 use crate::job_manager::get_app_handle;
+use crate::settings_manager::SettingsJSON;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 
@@ -205,6 +206,16 @@ fn get_all_job_health() -> HashMap<String, String> {
     storage_manager::get_all_job_health()
 }
 
+#[tauri::command]
+fn get_settings() -> SettingsJSON {
+    settings_manager::get_settings()
+}
+
+#[tauri::command]
+fn set_settings(settings: SettingsJSON) -> bool {
+    settings_manager::set_settings(&settings)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -232,7 +243,9 @@ pub fn run() {
             unpause_job,
             stop_job,
             get_job_update,
-            get_all_job_health
+            get_all_job_health,
+            get_settings,
+            set_settings
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use
