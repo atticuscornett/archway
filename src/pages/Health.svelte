@@ -88,9 +88,9 @@
             <Card.Description>Job UUID: {job["uuid"]}</Card.Description>
         </Card.Header>
         <Card.Content>
-            {#if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] == "good": "unknown"}
+            {#if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] == "good": false}
                 <CircleCheck class="align-bottom inline text-green-400"/>
-            {:else if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] == "bad": "unknown"}
+            {:else if health[job["uuid"]] ? health[job["uuid"]].split("/")[0] == "bad": false}
                 <CircleX class="align-bottom inline text-red-600"/>
             {:else}
                 <CircleHelp class="align-bottom inline text-yellow-400"/>
