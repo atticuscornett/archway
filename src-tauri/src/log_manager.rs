@@ -33,21 +33,21 @@ pub fn job_log(job_id: &str, body: &str, msg_type: &str, log_setting: String) {
     let log_title_str = log_title.as_str();
     if (msg_type == "FILE") {
         if (log_setting == "high"){
-            log(log_title_str, body, "INFO");
+            log_info(log_title_str, body);
         }
         return;
     }
     if (msg_type == "STEP") {
         if (log_setting != "low") {
-            log(log_title_str, body, "INFO");
+            log_info(log_title_str, body);
         }
         return;
     }
     if (msg_type == "ERROR") {
-        log(log_title_str, body, "ERROR");
+        log_error(log_title_str, body);
         return;
     }
     else {
-        log(log_title_str, body, "INFO");
+        log_info(log_title_str, body);
     }
 }
