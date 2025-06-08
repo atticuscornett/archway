@@ -1,7 +1,10 @@
-# Tauri + SvelteKit + TypeScript
+<img src="./src/img/ArchwayIcon.svg" alt="Archway Icon" width="100" height="100">
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+# Archway
+A simple, free, open-source, automated backup and archive solution for your files.
 
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+## Features
+- **Automated Backups**: Schedule backups to run automatically at specified intervals.
+- **Automated Archiving**: Archive files that have not been used in a while when an external drive is connected.
+- **File Filters**: Use file filters to select which files to back up based on criteria like file type, size, and last used date.
+- **Multiple Custom Jobs**: Create multiple backup and archive jobs with different configurations.
