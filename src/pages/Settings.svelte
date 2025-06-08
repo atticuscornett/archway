@@ -6,6 +6,7 @@
     import {Switch} from "$lib/components/ui/switch/index.js";
     import {Label} from "$lib/components/ui/label/index.js";
     import {Separator} from "$lib/components/ui/separator/index.js";
+    import * as Select from "$lib/components/ui/select/index.js";
 
     let {page = $bindable()} = $props();
     let appVersion = $state("Loading...");
@@ -36,7 +37,23 @@
 </p>
 <Separator class="mb-4"/>
 
-<div class="flex items-center space-x-2">
+<div>
     <Switch id="run-on-startup" bind:checked={appSettings.run_on_startup} onCheckedChange={updateSettings}/>
     <Label for="run-on-startup">Run Archway in background on startup</Label>
+    <br><br>
+    <Label for="log-level">
+        <h5>Log Level</h5>
+        Note: High log level will slow down job processing and increase log file size significantly.<br>
+        High log level is only recommended for debugging purposes.
+    </Label>
+    <Select.Root type="single" bind:value={appSettings.log_level} onValueChange={updateSettings}>
+        <Select.Trigger class="w-[180px]">
+            {appSettings.log_level.charAt(0).toUpperCase() + appSettings.log_level.slice(1)}
+        </Select.Trigger>
+        <Select.Content>
+            <Select.Item value="low">Low</Select.Item>
+            <Select.Item value="medium">Medium</Select.Item>
+            <Select.Item value="high">High</Select.Item>
+        </Select.Content>
+    </Select.Root>
 </div>
