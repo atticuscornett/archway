@@ -1,5 +1,7 @@
 use crate::storage_manager::{file_with_executable, read_json_file};
 use serde::{Deserialize, Serialize};
+use tauri_plugin_autostart::ManagerExt;
+use crate::job_manager::get_app_handle;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct SettingsJSON {
@@ -46,6 +48,17 @@ pub fn get_settings() -> SettingsJSON {
 pub fn set_settings(settings: &SettingsJSON) -> bool {
     let mut settings_to_save = settings.clone();
     fill_default_settings(&mut settings_to_save);
+
+    if settings_to_save.run_on_startup.unwrap_or(true) {
+        get_app_handle().autolaunch().enable().unwrap_or_else(|err| {
+            println!("Failed to enable autostart: {}", err);
+        });
+    }
+    else {
+        get_app_handle().autolaunch().disable().unwrap_or_else(|err| {
+            println!("Failed to disable autostart: {}", err);
+        });
+    }
 
     match serde_json::to_string(&settings_to_save) {
         Ok(json_string) => {

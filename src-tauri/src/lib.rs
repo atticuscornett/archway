@@ -21,6 +21,7 @@ use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_notification::NotificationExt;
+use tauri_plugin_autostart::ManagerExt;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 
@@ -254,6 +255,19 @@ pub fn run() {
             // Store the app handle in a global variable for later use
             APP_HANDLE.set(Mutex::new(app.handle().clone())).unwrap();
             job_manager::set_app_handle(app.handle().clone());
+
+            let autostart_manager = app.autolaunch();
+            let settings = settings_manager::get_settings();
+            if settings.run_on_startup.unwrap_or(true) {
+                autostart_manager.enable().unwrap_or_else(|err| {
+                    println!("Failed to enable autostart: {}", err);
+                });
+            } else {
+                autostart_manager.disable().unwrap_or_else(|err| {
+                    println!("Failed to disable autostart: {}", err);
+                });
+            }
+
 
             tauri::async_runtime::spawn(background_manager::background_worker());
 
