@@ -31,19 +31,19 @@ pub fn log_error(log_title: &str, body: &str) {
 pub fn job_log(job_id: &str, body: &str, msg_type: &str, log_setting: String) {
     let log_title = "job-".to_owned() + job_id;
     let log_title_str = log_title.as_str();
-    if (msg_type == "FILE") {
-        if (log_setting == "high"){
+    if msg_type == "FILE" {
+        if log_setting == "high"{
             log_info(log_title_str, body);
         }
         return;
     }
-    if (msg_type == "STEP") {
-        if (log_setting != "low") {
+    if msg_type == "STEP" {
+        if log_setting != "low" {
             log_info(log_title_str, body);
         }
         return;
     }
-    if (msg_type == "ERROR") {
+    if msg_type == "ERROR" {
         log_error(log_title_str, body);
         return;
     }

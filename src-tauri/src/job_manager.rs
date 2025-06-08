@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::format;
-use crate::structs::{JobInfo, JobStatus};
+use crate::structs::{JobStatus};
 use crate::{drive_manager, settings_manager, storage_manager};
 use once_cell::sync::{Lazy, OnceCell};
 use sha2::{Digest, Sha256};
@@ -45,7 +44,7 @@ pub fn get_job_update(uuid: String) -> String {
         .expect("Job updates not initialized")
         .lock()
         .expect("Failed to lock job updates");
-    if (job_updates.contains_key(&uuid)) {
+    if job_updates.contains_key(&uuid) {
         job_updates.get(&uuid).unwrap().clone()
     } else {
         "not_running".to_string()
@@ -239,7 +238,7 @@ fn get_file_size(path: &str) -> std::io::Result<u64> {
 fn file_hash(path: &str) -> std::io::Result<Vec<u8>> {
     let mut file = fs::File::open(&path)?;
     let mut hasher = Sha256::new();
-    let n = io::copy(&mut file, &mut hasher)?;
+    let _n = io::copy(&mut file, &mut hasher)?;
     Ok(hasher.finalize().to_vec())
 }
 

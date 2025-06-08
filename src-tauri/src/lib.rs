@@ -16,7 +16,7 @@ use std::sync::Mutex;
 use sysinfo::Disks;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{AppHandle, Manager, WindowEvent};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_notification::NotificationExt;
 use crate::job_manager::get_app_handle;
 
@@ -208,7 +208,7 @@ fn get_all_job_health() -> HashMap<String, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, args, cws| {
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cws| {
             let main_window = app.get_webview_window("main").expect("no main window");
             main_window.show().unwrap();
             main_window.set_focus().unwrap();
@@ -272,11 +272,11 @@ pub fn run() {
                             job_manager::set_job_update(job.job.uuid, "stop_requested".to_string());
                         }
 
-                        if (job_count > 0){
+                        if job_count > 0{
                             // Give jobs time to stop
                             std::thread::sleep(std::time::Duration::from_secs(10));
 
-                            if (iter == 0) {
+                            if iter == 0 {
                                 // Notify user Archway is stopping jobs
                                 get_app_handle()
                                     .notification()

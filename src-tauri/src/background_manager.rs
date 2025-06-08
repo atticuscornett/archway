@@ -1,6 +1,5 @@
 use crate::{drive_manager, job_manager, storage_manager};
 use crate::drive_manager::get_drive_uuid;
-use crate::job_manager::start_job;
 use crate::structs::JobInfo;
 use time::OffsetDateTime;
 
@@ -36,7 +35,7 @@ pub async fn background_worker() {
             }
 
             for job in jobs_with_drive_trigger {
-                if (job.output_device == "special:any"){
+                if job.output_device == "special:any"{
                     let root_drive = match drive_manager::get_root_drive(&job.output_dir) {
                         Some(drive) => drive,
                         None => {

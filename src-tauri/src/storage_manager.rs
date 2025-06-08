@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::format;
-use std::hash::Hash;
 use std::ops::Add;
 use crate::structs::JobInfo;
 
@@ -87,7 +85,7 @@ pub fn get_all_job_health() -> HashMap<String, String> {
         Ok(health) => {
             health
         }
-        Err(err) => {
+        Err(_err) => {
             let blank_map: HashMap<String, String> = HashMap::new();
             return blank_map;
         }
