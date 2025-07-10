@@ -219,6 +219,11 @@ fn set_settings(settings: SettingsJSON) -> bool {
     settings_manager::set_settings(&settings)
 }
 
+#[tauri::command]
+fn get_job_file_type(file: String) -> String {
+    storage_manager::get_job_file_type(&file)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -249,7 +254,8 @@ pub fn run() {
             get_job_update,
             get_all_job_health,
             get_settings,
-            set_settings
+            set_settings,
+            get_job_file_type
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use

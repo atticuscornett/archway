@@ -117,3 +117,19 @@ pub fn set_job_health_by_uuid(uuid: &str, health: &str) -> bool {
     );
     set_all_job_health(all_health)
 }
+
+// Check if file is a single job file, a drive file (with multiple jobs), or not a job file at all
+pub fn get_job_file_type(file_path_str: &str) -> String {
+    // Try to read the file as a single job
+    match read_json_file::<JobInfo>(file_path_str.to_string()) {
+        Ok(_) => return "single_job".to_string(),
+        Err(_) => {}
+    }
+    // Try to read the file as a drive file
+    match read_json_file::<crate::structs::DriveInfoFile>(file_path_str.to_string()) {
+        Ok(_) => return "drive_file".to_string(),
+        Err(_) => {}
+    }
+    // If both attempts fail, it's not a job file
+    "unknown".to_string()
+}
