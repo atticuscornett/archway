@@ -77,9 +77,9 @@
 
     let loadStateFromJob = () => {
         for (let trigger of job["triggers"]) {
-            if (trigger.type === "event" && trigger.traits.event === "device-connection") {
+            if (trigger.trigger_type === "event" && trigger.traits.event === "device-connection") {
                 onDeviceConnect = true;
-            } else if (trigger.type === "time") {
+            } else if (trigger.trigger_type === "time") {
                 onSchedule = true;
                 if (trigger.traits.event === "hourly") {
                     scheduleEnabled.hourly = true;
@@ -118,7 +118,7 @@
 <br>
 
 {#if onSchedule}
-    <h5>If Archway is not running when job is scheduled, it will not run.</h5>
+    <h5>If Archway is not running when job is scheduled, the job will not run.</h5>
     <div class="ml-4">
         <Switch bind:checked={scheduleEnabled.hourly} id="hourly" onCheckedChange={updateJob}></Switch>
         <Label for="hourly" class="align-text-bottom text-lg">Hourly</Label>

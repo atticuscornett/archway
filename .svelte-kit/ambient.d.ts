@@ -30,6 +30,7 @@ declare module '$env/static/private' {
 	export const ACSvcPort: string;
 	export const ALLUSERSPROFILE: string;
 	export const APPDATA: string;
+	export const CAXI_VM_OPTIONS: string;
 	export const COLOR: string;
 	export const CommonProgramFiles: string;
 	export const CommonProgramW6432: string;
@@ -146,6 +147,7 @@ declare module '$env/dynamic/private' {
 		ACSvcPort: string;
 		ALLUSERSPROFILE: string;
 		APPDATA: string;
+		CAXI_VM_OPTIONS: string;
 		COLOR: string;
 		CommonProgramFiles: string;
 		CommonProgramW6432: string;
