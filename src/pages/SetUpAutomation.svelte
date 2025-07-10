@@ -8,6 +8,7 @@
     import JobTriggers from "../components/JobSetup/JobTriggers.svelte";
     import {toast} from "svelte-sonner";
     import {onMount} from "svelte";
+    import ImportSelect from "../components/JobSetup/ImportSelect.svelte";
 
     let { page = $bindable(), pageData=$bindable() } = $props();
 
@@ -47,6 +48,9 @@
     }
 
     let prevStep = () => {
+        if (step === 6){
+            step = 1;
+        }
         step -= 1;
     }
 
@@ -59,7 +63,7 @@
 </script>
 
 {#if step === 0}
-    <JobBehavior bind:job bind:canContinue/>
+    <JobBehavior bind:job bind:canContinue bind:step/>
 {/if}
 {#if step === 1}
     <OutputSelect bind:job bind:canContinue/>
@@ -74,18 +78,22 @@
     <JobTriggers bind:job bind:canContinue/>
 {/if}
 
+{#if step === 6}
+    <ImportSelect bind:job bind:canContinue bind:step/>
+{/if}
+
 {#if step > 0}
     <Button variant="secondary" class="fixed bottom-4 left-4" onclick={prevStep} disabled={step === 5}><ChevronLeft/> Back</Button>
 {:else}
     <Button variant="secondary" class="fixed bottom-4 left-4" onclick={()=>{page="Dashboard";}}><Home/> Go to Dashboard</Button>
 {/if}
 <Button class="fixed bottom-4 right-4" onclick={nextStep} disabled={(!canContinue || step === 5)}>
-    {#if step <= 3}
-        Next
+    {#if step === 5}
+        Creating Job...
     {:else if step === 4}
         Finish
     {:else}
-        Creating Job...
+        Next
     {/if}
     <ChevronRight/>
 </Button>

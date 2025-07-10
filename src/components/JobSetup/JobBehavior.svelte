@@ -5,9 +5,11 @@
     import {Checkbox} from "$lib/components/ui/checkbox/index.js";
     import {Label} from "$lib/components/ui/label/index.js";
     import {onMount} from "svelte";
+    import {Button} from "$lib/components/ui/button/index.js";
+    import {Plus} from "@lucide/svelte";
 
 
-    let { job = $bindable(), canContinue = $bindable() } = $props();
+    let { job = $bindable(), canContinue = $bindable(), step = $bindable() } = $props();
 
     $effect(() => {
         if (job["copies"] < 1) {
@@ -15,7 +17,7 @@
         }
     })
 
-    onMount(() => {
+    onMount(async () => {
         canContinue = true;
     });
 </script>
@@ -24,6 +26,7 @@
 
 
 <h5>Job Name</h5>
+<Button class="fixed top-10 right-10 z-50" onclick={()=>{step=6;}}>Import <Plus/></Button>
 <Input bind:value={job["job_name"]} placeholder="Job Name" />
 <h6>UUID: {job.uuid}</h6>
 <br>
