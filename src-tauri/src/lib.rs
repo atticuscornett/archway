@@ -224,6 +224,25 @@ fn get_job_file_type(file: String) -> String {
     storage_manager::get_job_file_type(&file)
 }
 
+#[tauri::command]
+fn get_individual_job_file(file: String) -> String {
+    let job = storage_manager::read_json_file::<structs::JobInfo>(file).unwrap();
+    serde_json::to_string(&job).unwrap_or_else(|err| {
+        println!("Error serializing job to JSON: {}", err);
+        String::new()
+    })
+}
+
+#[tauri::command]
+fn get_job_list_from_drive_info_file(file: String) -> String {
+    let drive_info = storage_manager::read_json_file::<structs::DriveInfoFile>(file).unwrap();
+    let job_list = drive_info.jobs;
+    serde_json::to_string(&job_list).unwrap_or_else(|err| {
+        println!("Error serializing job list to JSON: {}", err);
+        String::new()
+    })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -255,7 +274,9 @@ pub fn run() {
             get_all_job_health,
             get_settings,
             set_settings,
-            get_job_file_type
+            get_job_file_type,
+            get_individual_job_file,
+            get_job_list_from_drive_info_file
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use
