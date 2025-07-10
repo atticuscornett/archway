@@ -7,6 +7,7 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::fs;
 use std::io;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -1189,4 +1190,18 @@ fn handle_pause_stop(uuid: String) -> bool {
         return true;
     }
     return false;
+}
+
+pub fn export_job(uuid: &str, output_path: &str) -> Result<(), String> {
+    let job_info = storage_manager::get_job_by_uuid(uuid);
+    let job_json = serde_json::to_string(&job_info)
+        .map_err(|e| format!("Failed to serialize job info: {}", e))?;
+
+    let mut file = std::fs::File::create(output_path)
+        .map_err(|e| format!("Failed to create file: {}", e))?;
+    
+    file.write_all(job_json.as_bytes())
+        .map_err(|e| format!("Failed to write to file: {}", e))?;
+
+    Ok(())
 }

@@ -291,6 +291,12 @@ fn get_all_drive_info() -> String {
     })
 }
 
+#[tauri::command]
+fn export_job(uuid: String, path: String) -> bool {
+    job_manager::export_job(&uuid, &path).unwrap();
+    true
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -325,7 +331,8 @@ pub fn run() {
             get_job_file_type,
             get_individual_job_file,
             get_job_list_from_drive_info_file,
-            get_all_drive_info
+            get_all_drive_info,
+            export_job
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use

@@ -5,7 +5,8 @@
     import { onMount } from "svelte";
     import * as Card from "$lib/components/ui/card/index.js";
     import {Button} from "$lib/components/ui/button";
-    import {Plus, Home, Pencil, Play, Trash2} from "@lucide/svelte";
+    import {Plus, Home, Pencil, Play, Trash2, Download} from "@lucide/svelte";
+    import {save} from "@tauri-apps/plugin-dialog";
 
     let jobList: Object[] = $state([]);
 
@@ -43,6 +44,30 @@
         }
     };
 
+    let exportJob = async (jobUuid: string) => {
+        let path = await save({
+            filters: [
+                {
+                    name: "Job Files",
+                    extensions: ["json"]
+                }
+            ],
+            defaultPath: `job_${jobUuid}.json`
+        })
+
+        if (!path) {
+            toast.error("Export cancelled.");
+            return;
+        }
+
+        let result = await invoke("export_job", {uuid: jobUuid, path: path});
+        if (result) {
+            toast.success("Job exported successfully.");
+        } else {
+            toast.error("Failed to export job. Please try again.");
+        }
+    }
+
     onMount(()=>{
         loadJobs();
     })
@@ -65,12 +90,14 @@
                 </Card.Header>
                 <Card.Content>
                     <p>Input Directories: {job["input_dirs"].map((dir: Object)=>dir["path"]).join(",")}</p>
-                    <p>Output Directory: {job["output_dir"]}</p>
+                    <p class="mb-10">Output Directory: {job["output_dir"]}</p>
                 </Card.Content>
                 <div class="absolute top-4 right-4">
                     <Button class="mb-2" onclick={()=>{startJob(job["uuid"])}}><Play/> Start Job</Button>
                     <br>
                     <Button class="mb-2" onclick={()=>{page="SetUpAutomation:"+job["uuid"]}}><Pencil/> Edit Job</Button>
+                    <br>
+                    <Button class="mb-2" onclick={()=>{exportJob(job["uuid"])}}><Download/> Export Job</Button>
                     <br>
                     <Button class="mb-2" variant="destructive" onclick={()=>{deleteJob(job["uuid"])}}><Trash2/> Delete Job</Button>
                 </div>
