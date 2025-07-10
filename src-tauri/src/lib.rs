@@ -9,6 +9,7 @@ mod structs;
 use serde_json;
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::path::Path;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use crate::drive_manager::get_root_drive;
 use crate::job_manager::get_app_handle;
@@ -243,6 +244,53 @@ fn get_job_list_from_drive_info_file(file: String) -> String {
     })
 }
 
+#[tauri::command]
+fn get_all_drive_info() -> String {
+    let mut drive_info_collection: Vec<structs::DriveInfoFile> = Vec::new();
+
+    let drives = drive_manager::get_all_drives();
+    for drive in &drives {
+        let drive_uuid = drive_manager::get_drive_uuid(&drive[0]);
+        if drive_uuid.is_empty() {
+            println!("Failed to get or create drive UUID for {}", drive[0]);
+            continue;
+        }
+
+        let drive_path = Path::new(&drive[0]);
+        let drive_buf = drive_path.join("archway.json");
+
+        println!("File path: {}", drive_buf.display());
+
+        let file = std::fs::File::open(&drive_buf);
+
+        match file {
+            Ok(file) => match serde_json::from_reader(file) {
+                Ok(info) => {
+                    drive_info_collection.push(info);
+                },
+                Err(e) => {
+                    println!("Failed to read drive info file: {}", e);
+                }
+            },
+            Err(e) => {
+                println!("Failed to open drive info file: {}", e);
+            }
+        }
+
+
+
+
+        println!("Drive: {}, UUID: {}", drive[1], drive_uuid);
+
+
+    }
+
+    serde_json::to_string(&drive_info_collection).unwrap_or_else(|err| {
+        println!("Error serializing drive info to JSON: {}", err);
+        String::new()
+    })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -276,7 +324,8 @@ pub fn run() {
             set_settings,
             get_job_file_type,
             get_individual_job_file,
-            get_job_list_from_drive_info_file
+            get_job_list_from_drive_info_file,
+            get_all_drive_info
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use

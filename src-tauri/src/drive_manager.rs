@@ -34,7 +34,7 @@ pub fn get_drive_uuid(drive_name: &str) -> String {
             Ok(_) => println!("Created new drive info file at {}", uuid_path.display()),
             Err(e) => {
                 println!("Failed to create drive info file: {}", e);
-                return uuid_string;
+                return "".to_string();
             }
         }
     }
