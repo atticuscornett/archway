@@ -24,7 +24,6 @@
 
         let allJobs = JSON.parse(await invoke("get_all_jobs"));
         let unknown_jobs = allJobs.length;
-        console.log("Unknown jobs:", unknown_jobs);
         let healthy_jobs = 0;
         let unhealthy_jobs = 0;
         for (let job of allJobs) {

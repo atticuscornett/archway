@@ -16,7 +16,6 @@
             try {
                 statusList = JSON.parse(await invoke("get_all_job_statuses"));
                 jobsInProgress = statusList.filter(job => (job["completed"] === false)).length;
-                console.log(jobsInProgress);
             }
             catch (e){
                 toast.error("Failed to load job statuses.");
