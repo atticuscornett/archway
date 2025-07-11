@@ -1,6 +1,7 @@
+use tauri_plugin_notification::NotificationExt;
 use crate::drive_manager::get_drive_uuid;
 use crate::structs::JobInfo;
-use crate::{drive_manager, job_manager, storage_manager};
+use crate::{drive_manager, job_manager, storage_manager, structs};
 use time::OffsetDateTime;
 
 pub async fn background_worker() {
@@ -75,6 +76,55 @@ pub async fn background_worker() {
                     }
                 }
             }
+
+            // Check if jobs are available for import from new drives
+            for new_drive in &new_drives {
+                // Check if the drive contains an archway.json file
+                let drive_uuid = get_drive_uuid(new_drive.get(0).unwrap());
+                if drive_uuid.is_empty() {
+                    println!("No UUID found for new drive: {:?}", new_drive);
+                    continue;
+                }
+
+                println!("Checking drive: {} with UUID: {} for new jobs", new_drive.get(0).unwrap(), drive_uuid);
+                let drive_path_string = new_drive.get(0).unwrap();
+                let drive_path = std::path::Path::new(drive_path_string);
+                let drive_info_path = drive_path.join("archway.json");
+                let drive_jobs = storage_manager::read_json_file::<structs::DriveInfoFile>(drive_info_path.to_string_lossy().to_string());
+
+                println!("Drive info path: {}", drive_info_path.display());
+                match drive_jobs {
+                    Ok(drive_info) => {
+                        let mut jobs_available = false;
+                        for job in drive_info.jobs {
+                            println!("Checking job: {} with UUID: {}", job.job_name, job.uuid);
+                            if !storage_manager::get_all_jobs().iter().any(|j| j.uuid == job.uuid) {
+                                println!("Job {} is available for import", job.job_name);
+                                jobs_available = true;
+                            }
+                        }
+
+                        if jobs_available {
+                            println!("New jobs available for import from drive: {}", drive_uuid);
+                            let result = job_manager::get_app_handle()
+                                .notification()
+                                .builder()
+                                .title("New Jobs Available")
+                                .body("New jobs are available for import from a connected drive. See the job creation page for more details.")
+                                .show();
+
+                            match result {
+                                Ok(_) => println!("Notification sent successfully."),
+                                Err(e) => println!("Failed to send notification: {}", e),
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        println!("Failed to read drive info file: {}", e);
+                    }
+                }
+            }
+
         } else {
             println!("No changes in drive list.");
         }
