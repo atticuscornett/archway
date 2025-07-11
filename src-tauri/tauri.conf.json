@@ -26,7 +26,7 @@
         "style-src": "'self'",
         "img-src": "'self'",
         "font-src": "'self'",
-        "connect-src": "'self'"
+        "connect-src": "'self' api.github.com"
       }
     }
   },
