@@ -14,7 +14,7 @@
     onMount(()=>{
         updateNoticeOpen = false;
         // Check for updates
-        fetch("https://api.github.com/atticuscornett/archway/releases/latest")
+        fetch("https://api.github.com/repos/atticuscornett/archway/releases/latest")
             .then(response => {
                 if (response.status === 200) {
                     response.json()
