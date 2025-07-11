@@ -22,15 +22,19 @@
             toast.error("Something went wrong while loading job health.");
         }
 
-        let unknown_jobs = JSON.parse(await invoke("get_all_jobs")).length;
+        let allJobs = JSON.parse(await invoke("get_all_jobs"));
+        let unknown_jobs = allJobs.length;
         console.log("Unknown jobs:", unknown_jobs);
         let healthy_jobs = 0;
         let unhealthy_jobs = 0;
-        for (let job in health) {
-            if (health[job].includes("good")) {
+        for (let job of allJobs) {
+            if (!health[job.uuid]) {
+                continue; // Skip if health data is not available for this job
+            }
+            if (health[job.uuid].includes("good")) {
                 healthy_jobs++;
             }
-            if (health[job].includes("bad")) {
+            if (health[job.uuid].includes("bad")) {
                 unhealthy_jobs++;
             }
         }
