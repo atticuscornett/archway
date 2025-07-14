@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
     import {Button} from "$lib/components/ui/button/index.js";
     import {Files, FileSliders} from '@lucide/svelte';
     import * as Select from "$lib/components/ui/select/index.js";
@@ -21,7 +21,7 @@
 </script>
 
 <div class="center-screen">
-    <img src="src/img/ArchwayFull.svg" alt="Archway Logo" class="logo" />
+    <img src="./src/img/ArchwayFull.svg" alt="Archway Logo" class="logo" />
     <h1>Welcome to Archway!</h1>
     <h2>Let's get your first automation set up.</h2>
     <div class="small-margin">

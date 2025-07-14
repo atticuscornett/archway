@@ -44,7 +44,7 @@
 
 </script>
 
-<img src="src/img/ArchwayFull.svg" class="w-52 mb-4" alt="Archway Logo" />
+<img src="./src/img/ArchwayFull.svg" class="w-52 mb-4" alt="Archway Logo" />
 <HealthTile bind:page/>
 <JobListTile bind:page/>
 <StatusTile bind:page/>
