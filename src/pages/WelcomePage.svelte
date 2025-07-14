@@ -21,7 +21,7 @@
 </script>
 
 <div class="center-screen">
-    <img src="./src/img/ArchwayFull.svg" alt="Archway Logo" class="logo" />
+    <img src="ArchwayFull.svg" alt="Archway Logo" class="logo" />
     <h1>Welcome to Archway!</h1>
     <h2>Let's get your first automation set up.</h2>
     <div class="small-margin">
