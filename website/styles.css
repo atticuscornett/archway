@@ -1,0 +1,70 @@
+@font-face {
+    font-family: 'Kumbh Sans';
+    src: url('../src/fonts/KumbhSans.ttf');
+}
+
+@font-face {
+    font-family: 'Funnel Sans';
+    src: url('../src/fonts/FunnelSans.ttf');
+}
+
+h1 {
+    font-family: 'Kumbh Sans', sans-serif;
+    font-size: 2.5rem;
+}
+
+p {
+    font-family: 'Funnel Sans', sans-serif;
+    font-size: 1.5rem;
+}
+
+body {
+    margin: 0;
+}
+
+.sidebar {
+    width: 30%;
+    height: 100vh;
+    background-color: #020817;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    align-content: center;
+}
+
+.content {
+    margin-left: calc(30% + 20px);
+    padding: 50px;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+    background-color: #f4f4f4;
+    margin-top: 0;
+}
+
+.center-group {
+    vertical-align: middle;
+    align-self: center;
+    width: 100%;
+    text-align: center;
+}
+
+.center-group img {
+    width: 80%;
+}
+
+.sidebar button {
+    background-color: #35bcef;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.25rem;
+    margin: 5px;
+    padding: 10px 20px;
+    font-family: 'Funnel Sans', sans-serif;
+    cursor: pointer;
+}
