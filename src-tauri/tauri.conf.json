@@ -23,10 +23,10 @@
       "csp": {
         "default-src": "'self'",
         "script-src": "'self'",
-        "style-src": "'self'",
-        "img-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' http://tauri.localhost",
         "font-src": "'self'",
-        "connect-src": "'self' api.github.com"
+        "connect-src": "'self' api.github.com http://ipc.localhost"
       }
     }
   },
