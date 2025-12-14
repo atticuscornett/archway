@@ -691,6 +691,7 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
     let total_files = files.len() as u32;
     let mut output_paths: Vec<String> = Vec::new();
     let mut processed_files = 0;
+    let mut recovery_paths: Vec<Vec<String>> = Vec::new();
 
     update_job_status(
         uuid.as_str(),
@@ -833,6 +834,11 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
 
         // Copy the file
         let output_file = output_dir.join(&file_path_str);
+        // Store recovery path
+        recovery_paths.push(vec![
+            output_file_full_path.to_str().unwrap().to_string(),
+            file.to_string()
+        ]);
         match std::fs::copy(&file, &output_file) {
             Ok(_) => {
                 processed_files += 1;
@@ -870,6 +876,10 @@ async fn job_stage_three(uuid: String, files: Vec<String>, output_dir: PathBuf) 
             }
         }
     }
+
+    // Save recovery paths
+    storage_manager::write_json_file(output_dir.join("recovery_paths.json").to_str().unwrap().to_string(), &recovery_paths).unwrap();
+
     tauri::async_runtime::spawn(job_stage_four(uuid, files, output_paths));
 }
 
