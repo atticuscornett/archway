@@ -1,15 +1,22 @@
 <script>
-    import { Home } from "@lucide/svelte";
+    import {ArrowRight, ChevronLeft, Home} from "@lucide/svelte";
     import {Button} from "$lib/components/ui/button/index.js";
     import {Label} from "$lib/components/ui/label/index.js";
     import {Input} from "$lib/components/ui/input/index.js";
     import * as Select from "$lib/components/ui/select/index.js";
+    import * as Table from "$lib/components/ui/table/index.js";
     import {open} from "@tauri-apps/plugin-dialog";
     import {onMount} from "svelte";
+    import {start} from "../../.svelte-kit/output/client/_app/immutable/entry/start.Dp0sHln7.js";
     let { restoreId = $bindable() , page = $bindable() } = $props();
     let restoreFile = $state("");
     let behavior = $state("Keep Most Recently Updated Files");
     let stage = $state(0);
+    let previewData = $state([]);
+    let startPreviewIndex = 0;
+
+    let recoveryFileStatus = $state("unknown");
+
 
     let fileSelect = async (e) => {
         e.preventDefault();
@@ -49,6 +56,33 @@
             }
 
             restoreId = "";
+        }
+    }
+
+    let getPreviewData = async () => {
+        previewData = [];
+        let data = JSON.parse(await invoke("get_recovery_file", {filePath: restoreFile}));
+
+        if (startPreviewIndex >= data.length){
+            startPreviewIndex = 0;
+        }
+
+        for (let i = startPreviewIndex; i < data.length && i < startPreviewIndex + 10; i++) {
+            previewData.push(data[i]);
+        }
+    }
+
+    let verifyRestoreFile = async () => {
+        recoveryFileStatus = "unknown";
+
+        try {
+            recoveryFileStatus = await invoke("verify_recovery_file", {filePath: restoreFile});
+            if (recoveryFileStatus === "Valid"){
+                startPreviewIndex = 0;
+                await getPreviewData();
+            }
+        } catch (error) {
+            recoveryFileStatus = "Error: Could not verify recovery file.";
         }
     }
 </script>
@@ -96,7 +130,7 @@
     <br>
 
     {#if restoreFile !== ""}
-        <Button class="mt-4" onclick={() => stage = 1}>Continue to Review</Button>
+        <Button class="mt-4" onclick={() => {stage = 1;verifyRestoreFile()}}>Continue to Review</Button>
     {/if}
 {/if}
 
@@ -106,4 +140,41 @@
     <p><strong>Restore File:</strong> {restoreFile}</p>
     <p><strong>Restore Behavior:</strong> {behavior}</p>
     <h4 class="mt-4 text-red-500">Please review the details above carefully before proceeding. This process may replace files on your system.</h4>
+    <h4>This process will create new folders if necessary to restore files to their original locations.</h4>
+
+    <br><br>
+    <h3>File Move Preview</h3>
+    {#if recoveryFileStatus === "unknown"}
+        <p>Verifying restore file...</p>
+    {:else if recoveryFileStatus === "Valid"}
+        {#if previewData.length === 0}
+            Loading preview...
+        {:else}
+            <Button class="left-4" onclick={()=>{startPreviewIndex += 10; getPreviewData()}}>Load more files...</Button>
+            <Table.Root>
+                <Table.Caption><Button>Confirm and Restore</Button></Table.Caption>
+                <Table.Header>
+                    <Table.Row>
+                        <Table.Head>Original</Table.Head>
+                        <Table.Head></Table.Head>
+                        <Table.Head>Destination</Table.Head>
+                    </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                    {#each previewData as item}
+                        <Table.Row>
+                            <Table.Cell class="font-medium">{item[0]}</Table.Cell>
+                            <Table.Cell><ArrowRight /></Table.Cell>
+                            <Table.Cell>{item[1]}</Table.Cell>
+                        </Table.Row>
+                    {/each}
+                </Table.Body>
+            </Table.Root>
+        {/if}
+
+    {:else}
+        <p class="text-red-500">Cannot use this recovery file.<br> {recoveryFileStatus}</p>
+    {/if}
+
+    <Button variant="secondary" class="fixed bottom-4 left-4" onclick={() => stage = 0}><ChevronLeft/> Back</Button>
 {/if}

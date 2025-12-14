@@ -303,6 +303,11 @@ fn verify_recovery_file(file_path: String) -> String {
     recovery_manager::verify_recovery_file(&file_path).to_string()
 }
 
+#[tauri::command]
+fn get_recovery_file(file_path: String) -> String {
+    recovery_manager::get_recovery_file(&file_path)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -339,7 +344,8 @@ pub fn run() {
             get_job_list_from_drive_info_file,
             get_all_drive_info,
             export_job,
-            verify_recovery_file
+            verify_recovery_file,
+            get_recovery_file
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use
