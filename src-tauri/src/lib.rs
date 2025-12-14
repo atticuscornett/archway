@@ -5,6 +5,7 @@ mod log_manager;
 mod settings_manager;
 mod storage_manager;
 mod structs;
+mod recovery_manager;
 
 use serde_json;
 use std::collections::HashMap;
@@ -297,6 +298,11 @@ fn export_job(uuid: String, path: String) -> bool {
     true
 }
 
+#[tauri::command]
+fn verify_recovery_file(file_path: String) -> String {
+    recovery_manager::verify_recovery_file(&file_path).to_string()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -332,7 +338,8 @@ pub fn run() {
             get_individual_job_file,
             get_job_list_from_drive_info_file,
             get_all_drive_info,
-            export_job
+            export_job,
+            verify_recovery_file
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use
