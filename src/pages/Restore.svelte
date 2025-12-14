@@ -5,6 +5,7 @@
     import {Input} from "$lib/components/ui/input/index.js";
     import * as Select from "$lib/components/ui/select/index.js";
     import {open} from "@tauri-apps/plugin-dialog";
+    import {onMount} from "svelte";
     let { restoreId = $bindable() , page = $bindable() } = $props();
     let restoreFile = $state("");
     let behavior = $state("Keep Most Recently Updated Files");
@@ -28,6 +29,26 @@
         console.log(selected);
         if (selected) {
             restoreFile = selected;
+        }
+    }
+
+    onMount(async () => {
+        await getRestoreFileFromId();
+    });
+
+    let getRestoreFileFromId = async () => {
+        if (restoreId && restoreId !== "") {
+            let job = JSON.parse(await invoke("get_job_by_uuid", {uuid: restoreId}));
+
+            let output_dir = job.output_dir;
+            if (output_dir.includes("\\")){
+                restoreFile = output_dir + "\\archway-" + restoreId + "\\recovery_paths.json";
+            }
+            else {
+                restoreFile = output_dir + "/archway-" + restoreId + "/recovery_paths.json";
+            }
+
+            restoreId = "";
         }
     }
 </script>
