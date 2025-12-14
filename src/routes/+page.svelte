@@ -9,12 +9,14 @@
     import Status from "../pages/Status.svelte";
     import Health from "../pages/Health.svelte";
     import Settings from "../pages/Settings.svelte";
+    import Restore from "../pages/Restore.svelte";
 
     let name = $state("");
     let greetMsg = $state("");
     window.invoke = invoke;
     let page = $state("WelcomePage");
     let pageData = $state("");
+    let restoreId = $state("");
 
     $effect(()=>{
         if (page.startsWith("SetUpAutomation:")) {
@@ -35,7 +37,7 @@
         <Dashboard bind:page></Dashboard>
     {/if}
     {#if page === "JobManager"}
-        <JobManager bind:page></JobManager>
+        <JobManager bind:page bind:restoreId></JobManager>
     {/if}
     {#if page === "Status"}
         <Status bind:page></Status>
@@ -46,27 +48,9 @@
     {#if page === "Settings"}
         <Settings bind:page></Settings>
     {/if}
-
-<!--    <div class="row">-->
-<!--        <a href="https://vite.dev" target="_blank">-->
-<!--            <img src="/vite.svg" class="logo vite" alt="Vite Logo" />-->
-<!--        </a>-->
-<!--        <a href="https://tauri.app" target="_blank">-->
-<!--            <img src="/tauri.svg" class="logo tauri" alt="Tauri Logo" />-->
-<!--        </a>-->
-<!--        <a href="https://svelte.dev" target="_blank">-->
-<!--            <img src="/svelte.svg" class="logo svelte-kit" alt="SvelteKit Logo" />-->
-<!--        </a>-->
-<!--    </div>-->
-<!--    <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>-->
-
-<!--    <form class="row" onsubmit={greet}>-->
-<!--        <input id="greet-input" placeholder="Enter a name..." bind:value={name} />-->
-<!--        <button type="submit">Greet</button>-->
-<!--    </form>-->
-<!--    <p>{greetMsg}</p>-->
-<!--    <h2>Hellow</h2>-->
-<!--    <Calendar type="single"/>-->
+    {#if page === "Restore"}
+        <Restore bind:page bind:restoreId></Restore>
+    {/if}
 </main>
 
 <style>
