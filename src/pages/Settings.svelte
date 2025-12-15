@@ -56,4 +56,7 @@
             <Select.Item value="high">High</Select.Item>
         </Select.Content>
     </Select.Root>
+    <br>
+    <br>
+    <Button onclick={()=>{page = "Restore";}}>Manual Restore</Button>
 </div>
