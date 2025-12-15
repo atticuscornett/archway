@@ -87,6 +87,21 @@ fn remove_job_by_uuid(uuid: String) -> bool {
     }
 }
 
+#[tauri::command]
+fn get_recovery_progress() -> f32 {
+    recovery_manager::get_recovery_progress()
+}
+
+#[tauri::command]
+fn get_recovery_logs() -> Vec<String> {
+    recovery_manager::get_recovery_logs()
+}
+
+#[tauri::command]
+fn run_recovery(file_path: String, recovery_mode: String) -> bool {
+    recovery_manager::run_recovery(&file_path, &recovery_mode)
+}
+
 fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::Error> {
     serde_json::from_str(job_info)
 }
@@ -345,7 +360,10 @@ pub fn run() {
             get_all_drive_info,
             export_job,
             verify_recovery_file,
-            get_recovery_file
+            get_recovery_file,
+            get_recovery_progress,
+            get_recovery_logs,
+            run_recovery
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use
