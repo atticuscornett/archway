@@ -323,6 +323,11 @@ fn get_recovery_file(file_path: String) -> String {
     recovery_manager::get_recovery_file(&file_path)
 }
 
+#[tauri::command]
+fn clear_recovery_status(){
+    recovery_manager::clear_recovery_status();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -363,7 +368,8 @@ pub fn run() {
             get_recovery_file,
             get_recovery_progress,
             get_recovery_logs,
-            run_recovery
+            run_recovery,
+            clear_recovery_status
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use

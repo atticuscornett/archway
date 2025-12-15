@@ -194,3 +194,8 @@ pub fn get_recovery_progress() -> f32 {
 pub fn get_recovery_logs() -> Vec<String> {
     RECOVERY_LOGS.lock().unwrap().clone()
 }
+
+pub fn clear_recovery_status(){
+    *RECOVERY_PROGRESS.lock().unwrap() = -1.0;
+    RECOVERY_LOGS.lock().unwrap().clear();
+}

@@ -8,6 +8,7 @@
     import {open} from "@tauri-apps/plugin-dialog";
     import {onMount} from "svelte";
     import {start} from "../../.svelte-kit/output/client/_app/immutable/entry/start.Dp0sHln7.js";
+    import {Progress} from "$lib/components/ui/progress/index.js";
     let { restoreId = $bindable() , page = $bindable() } = $props();
     let restoreFile = $state("");
     let behavior = $state("Keep Most Recently Updated Files");
@@ -16,6 +17,8 @@
     let startPreviewIndex = 0;
 
     let recoveryFileStatus = $state("unknown");
+    let recoveryProgress = $state(-1);
+    let recoveryLogs = $state([]);
 
 
     let fileSelect = async (e) => {
@@ -85,6 +88,33 @@
             recoveryFileStatus = "Error: Could not verify recovery file.";
         }
     }
+
+    let keepRecoveryStatusUpdated = async () => {
+        recoveryProgress = await invoke("get_recovery_progress");
+        if (recoveryProgress < 0) {
+            recoveryProgress = 0;
+        }
+        if (recoveryProgress < 1){
+            setTimeout(keepRecoveryStatusUpdated, 1000);
+        }
+        else {
+            stage = 3;
+            recoveryLogs = await invoke("get_recovery_logs")
+            await invoke("clear_recovery_status");
+        }
+    }
+
+    let startRestore = async () => {
+        recoveryProgress = 0;
+        let restore = await invoke("run_recovery", {filePath: restoreFile, recoveryMode: behavior});
+        if (!restore) {
+            stage = 4;
+            recoveryProgress = -1;
+            return;
+        }
+        stage = 2;
+        keepRecoveryStatusUpdated();
+    }
 </script>
 
 <h2 class="mb-5">Restore</h2>
@@ -98,6 +128,7 @@
 {#if stage === 0}
     <h3>This wizard will guide you through restoring files from a backup.</h3>
     <h3><strong class="text-red-500">This process may replace files on your system, please check the job details carefully before proceeding.</strong></h3>
+    <h3>Please check that there are no active jobs and clear any completed job statuses.</h3>
     <br>
     <Label>Select a restore file (typically named <code>recovery_paths.json</code> in the job folder):</Label>
     <br>
@@ -152,7 +183,7 @@
         {:else}
             <Button class="left-4" onclick={()=>{startPreviewIndex += 10; getPreviewData()}}>Load more files...</Button>
             <Table.Root>
-                <Table.Caption><Button>Confirm and Restore</Button></Table.Caption>
+                <Table.Caption><Button onclick={startRestore}>Confirm and Restore</Button></Table.Caption>
                 <Table.Header>
                     <Table.Row>
                         <Table.Head>Original</Table.Head>
@@ -177,4 +208,36 @@
     {/if}
 
     <Button variant="secondary" class="fixed bottom-4 left-4" onclick={() => stage = 0}><ChevronLeft/> Back</Button>
+{/if}
+
+{#if stage === 2}
+    <h3>Restoring Files...</h3>
+    <p>Progress: {Math.round(recoveryProgress * 100)}%</p>
+    <Progress value={Math.round(recoveryProgress * 100)} />
+{/if}
+
+{#if stage === 3}
+    <h3>Restore Complete!</h3>
+    <p>The restore job has been completed.</p>
+    <br>
+    <br>
+
+    {#if recoveryLogs.length > 0}
+        <h4>Some issues were encountered during the restore process:</h4>
+        <br>
+        <br>
+        <h4 class="mt-4">Restore Logs:</h4>
+        <ul>
+            {#each recoveryLogs as log}
+                <li>{log}</li>
+            {/each}
+        </ul>
+    {:else}
+        <h4>No issues were encountered during the restore process.</h4>
+    {/if}
+{/if}
+
+{#if stage === 4}
+    <h3 class="text-red-500">Could not start restore job.</h3>
+    <p>Please confirm that no jobs are running and that all job statuses are clear.</p>
 {/if}
