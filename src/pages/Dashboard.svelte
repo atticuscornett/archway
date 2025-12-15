@@ -6,6 +6,7 @@
     import SettingsTile from "../components/Dashboard/SettingsTile.svelte";
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
     import {getVersion} from "@tauri-apps/api/app";
+    import {openUrl} from "@tauri-apps/plugin-opener";
 
     let {page = $bindable()} = $props();
 
@@ -60,7 +61,7 @@
         </AlertDialog.Header>
         <AlertDialog.Footer>
             <AlertDialog.Cancel>Not Now</AlertDialog.Cancel>
-            <AlertDialog.Action onclick={()=>{open("https://github.com/atticuscornett/archway/releases/latest")}}>Go to Releases</AlertDialog.Action>
+            <AlertDialog.Action onclick={()=>{openUrl("https://github.com/atticuscornett/archway/releases/latest")}}>Go to Releases</AlertDialog.Action>
         </AlertDialog.Footer>
     </AlertDialog.Content>
 </AlertDialog.Root>
