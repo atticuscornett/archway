@@ -5,6 +5,7 @@ mod log_manager;
 mod settings_manager;
 mod storage_manager;
 mod structs;
+mod recovery_manager;
 
 use serde_json;
 use std::collections::HashMap;
@@ -84,6 +85,21 @@ fn remove_job_by_uuid(uuid: String) -> bool {
         println!("Failed to remove job with UUID {}.", uuid);
         return false;
     }
+}
+
+#[tauri::command]
+fn get_recovery_progress() -> f32 {
+    recovery_manager::get_recovery_progress()
+}
+
+#[tauri::command]
+fn get_recovery_logs() -> Vec<String> {
+    recovery_manager::get_recovery_logs()
+}
+
+#[tauri::command]
+fn run_recovery(file_path: String, recovery_mode: String) -> bool {
+    recovery_manager::run_recovery(&file_path, &recovery_mode)
 }
 
 fn get_job_from_string(job_info: &str) -> Result<structs::JobInfo, serde_json::Error> {
@@ -297,6 +313,21 @@ fn export_job(uuid: String, path: String) -> bool {
     true
 }
 
+#[tauri::command]
+fn verify_recovery_file(file_path: String) -> String {
+    recovery_manager::verify_recovery_file(&file_path).to_string()
+}
+
+#[tauri::command]
+fn get_recovery_file(file_path: String) -> String {
+    recovery_manager::get_recovery_file(&file_path)
+}
+
+#[tauri::command]
+fn clear_recovery_status(){
+    recovery_manager::clear_recovery_status();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -332,7 +363,13 @@ pub fn run() {
             get_individual_job_file,
             get_job_list_from_drive_info_file,
             get_all_drive_info,
-            export_job
+            export_job,
+            verify_recovery_file,
+            get_recovery_file,
+            get_recovery_progress,
+            get_recovery_logs,
+            run_recovery,
+            clear_recovery_status
         ])
         .setup(|app| {
             // Store the app handle in a global variable for later use

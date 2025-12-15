@@ -41,7 +41,7 @@
         });
 
         if (!selected) {
-            return; // User cancelled the dialog
+            return; // User canceled the dialog
         }
 
         let file_type = await invoke("get_job_file_type", {file: selected});

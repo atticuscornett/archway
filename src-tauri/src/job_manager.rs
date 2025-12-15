@@ -13,6 +13,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 use tauri_plugin_notification::NotificationExt;
+use crate::recovery_manager::get_recovery_progress;
 
 static APP_HANDLE: OnceCell<Mutex<AppHandle>> = OnceCell::new();
 static JOB_STATUSES: Lazy<Mutex<Vec<JobStatus>>> = Lazy::new(|| Mutex::new(Vec::new()));
@@ -62,6 +63,11 @@ pub fn get_app_handle() -> AppHandle {
 }
 
 pub fn start_job(uuid: String) -> bool {
+    if (get_recovery_progress() >= 0.0){
+        println!("Cannot start job while recovery is in progress.");
+        return false;
+    }
+
     // Check if the job is already running
     let already_running = {
         let job_statuses = JOB_STATUSES.lock().unwrap();

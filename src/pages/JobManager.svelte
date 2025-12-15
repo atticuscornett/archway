@@ -1,11 +1,11 @@
 <script lang="ts">
     import {toast} from "svelte-sonner";
 
-    let { page = $bindable() } = $props();
+    let { page = $bindable(), restoreId = $bindable()} = $props();
     import { onMount } from "svelte";
     import * as Card from "$lib/components/ui/card/index.js";
     import {Button} from "$lib/components/ui/button";
-    import {Plus, Home, Pencil, Play, Trash2, Download} from "@lucide/svelte";
+    import {Plus, Home, Pencil, Play, Trash2, Download, ArchiveRestore} from "@lucide/svelte";
     import {save} from "@tauri-apps/plugin-dialog";
 
     let jobList: Object[] = $state([]);
@@ -90,7 +90,7 @@
                 </Card.Header>
                 <Card.Content>
                     <p>Input Directories: {job["input_dirs"].map((dir: Object)=>dir["path"]).join(",")}</p>
-                    <p class="mb-10">Output Directory: {job["output_dir"]}</p>
+                    <p class="mb-24">Output Directory: {job["output_dir"]}</p>
                 </Card.Content>
                 <div class="absolute top-4 right-4">
                     <Button class="mb-2" onclick={()=>{startJob(job["uuid"])}}><Play/> Start Job</Button>
@@ -98,6 +98,8 @@
                     <Button class="mb-2" onclick={()=>{page="SetUpAutomation:"+job["uuid"]}}><Pencil/> Edit Job</Button>
                     <br>
                     <Button class="mb-2" onclick={()=>{exportJob(job["uuid"])}}><Download/> Export Job</Button>
+                    <br>
+                    <Button class="mb-2" onclick={()=>{restoreId=job["uuid"];page = "Restore";}}><ArchiveRestore/> Restore</Button>
                     <br>
                     <Button class="mb-2" variant="destructive" onclick={()=>{deleteJob(job["uuid"])}}><Trash2/> Delete Job</Button>
                 </div>

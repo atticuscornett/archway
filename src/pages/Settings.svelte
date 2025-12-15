@@ -7,6 +7,7 @@
     import {Label} from "$lib/components/ui/label/index.js";
     import {Separator} from "$lib/components/ui/separator/index.js";
     import * as Select from "$lib/components/ui/select/index.js";
+    import {openUrl} from "@tauri-apps/plugin-opener";
 
     let {page = $bindable()} = $props();
     let appVersion = $state("Loading...");
@@ -32,8 +33,8 @@
 <Button onclick={() => page = "Dashboard"} class="fixed top-10 right-10 z-50"><Home/> Back to Dashboard</Button>
 <p class="mb-4">
     App Version: {appVersion} &emsp;
-    <a href="#" class="underline" onclick={()=>{open("https://github.com/atticuscornett/archway")}}>GitHub Repo</a> &emsp;
-    <a href="#" class="underline" onclick={()=>{open("https://github.com/atticuscornett/archway/issues/new/choose")}}>Report an Issue/Request a Feature</a>
+    <a href="#" class="underline" onclick={()=>{openUrl("https://github.com/atticuscornett/archway")}}>GitHub Repo</a> &emsp;
+    <a href="#" class="underline" onclick={()=>{openUrl("https://github.com/atticuscornett/archway/issues/new/choose")}}>Report an Issue/Request a Feature</a>
 </p>
 <Separator class="mb-4"/>
 
@@ -56,4 +57,7 @@
             <Select.Item value="high">High</Select.Item>
         </Select.Content>
     </Select.Root>
+    <br>
+    <br>
+    <Button onclick={()=>{page = "Restore";}}>Manual Restore</Button>
 </div>
