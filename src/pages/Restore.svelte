@@ -7,7 +7,6 @@
     import * as Table from "$lib/components/ui/table/index.js";
     import {open} from "@tauri-apps/plugin-dialog";
     import {onMount} from "svelte";
-    import {start} from "../../.svelte-kit/output/client/_app/immutable/entry/start.Dp0sHln7.js";
     import {Progress} from "$lib/components/ui/progress/index.js";
     let { restoreId = $bindable() , page = $bindable() } = $props();
     let restoreFile = $state("");
